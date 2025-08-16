@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ ley.nombre }} - Gobierno de Chiapas{% endblock %}
+
+{% block sidebar %}
+<!-- Navegación de Leyes con estado activo -->
+{% for ley_item in leyes %}
+<div class="ley-item">
+    <button class="ley-link {% if ley_item.id == ley.id %}active{% endif %}" 
+            type="button" data-bs-toggle="collapse" 
+            data-bs-target="#ley{{ ley_item.id }}" 
+            aria-expanded="{% if ley_item.id == ley.id %}true{% else %}false{% endif %}">
+        <div class="ley-icon">
+            <i class="{% if ley_item.orden == 1 %}fas fa-balance-scale{% else %}fas fa-chart-line{% endif %}"></i>
+        </div>
+        <div class="ley-text">{{ ley_item.nombre }}</div>
+        <div class="ley-arrow">
+            <i class="fas fa-chevron-right"></i>
+        </div>
+    </button>
+    
+    <div class="collapse subnav {% if ley_item.id == ley.id %}show{% endif %}" id="ley{{ ley_item.id }}">
+        {% for subarticulo in ley_item.subarticulos.all %}
+        <a href="{% url 'publico:subarticulo_detail' subarticulo.id %}" class="subnav-item">
+            {{ subarticulo.nombre }}
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endfor %}
+{% endblock %}
+
+{% block content %}
+<!-- Header del Contenido -->
+<div class="content-header">
+    <h1 class="content-title">{{ ley.nombre|upper }}</h1>
+</div>
+
+<!-- Contenido Principal -->
+<div class="content-body">
+    {% if ley.descripcion %}
+    <div class="alert alert-info border-0">
+        <i class="fas fa-info-circle me-2"></i>
+        {{ ley.descripcion }}
+    </div>
+    {% endif %}
+
+    <!-- Grid de Sub-artículos -->
+    <div class="row">
+        {% for subarticulo in subarticulos %}
+        <div class="col-lg-6 col-md-12 mb-4">
+            <div class="card border-0 shadow-sm h-100 card-hover">
+                <div class="card-body">
+                    <div class="d-flex align-items-start mb-3">
+                        <div class="subarticulo-icon me-3">
+                            <i class="fas fa-{% cycle 'file-invoice-dollar' 'chart-bar' 'file-alt' 'project-diagram' 'hand-holding-usd' 'file-contract' 'clipboard-check' 'boxes' %}"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h5 class="card-title text-primary">{{ subarticulo.nombre }}</h5>
+                            {% if subarticulo.descripcion %}
+                            <p class="card-text text-muted small">{{ subarticulo.descripcion|truncatewords:15 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="badge bg-{% if subarticulo.periodicidad == 'ANUAL' %}warning{% else %}info{% endif %} me-2">
+                                <i class="fas fa-{% if subarticulo.periodicidad == 'ANUAL' %}calendar-alt{% else %}calendar-check{% endif %} me-1"></i>
+                                {{ subarticulo.get_periodicidad_display }}
+                            </span>
+                            <span class="badge bg-light text-dark">
+                                {{ subarticulo.tipos_documento.count }} documentos
+                            </span>
+                        </div>
+                        <a href="{% url 'publico:subarticulo_detail' subarticulo.id %}" 
+                           class="btn btn-primary btn-sm">
+                            <i class="fas fa-folder-open me-1"></i>Ver Documentos
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="no-disponible">
+                <i class="fas fa-folder-open fa-2x mb-3"></i>
+                <p>No hay sub-artículos disponibles para esta ley.</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Información Footer -->
+<div class="info-footer">
+    Actualizado al: {% now "d \d\e F \d\e Y" %}. Fuente: Coordinación Administrativa (Área de Planeación) | 
+    Conmutador: (961) 61 880 50 | Ext:21150
+</div>
+{% endblock %}

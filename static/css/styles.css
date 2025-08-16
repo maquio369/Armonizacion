@@ -1,0 +1,109 @@
+/* Estilos personalizados para el sistema de transparencia */
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.card-hover {
+    transition: transform 0.2s ease-in-out;
+}
+
+.card-hover:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.document-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.badge-periodicidad {
+    font-size: 0.8em;
+}
+
+.stats-card {
+    border-left: 4px solid #007bff;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.btn-download {
+    transition: all 0.3s ease;
+}
+
+.btn-download:hover {
+    transform: scale(1.05);
+}
+
+.quick-action {
+    transition: all 0.3s ease;
+}
+
+.quick-action:hover {
+    transform: scale(1.02);
+}
+
+/* Formularios */
+.required-field::after {
+    content: " *";
+    color: red;
+}
+
+/* Tables */
+.table-hover tbody tr:hover {
+    background-color: rgba(0,0,0,0.02);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .navbar-brand {
+        font-size: 1rem;
+    }
+    
+    .card {
+        margin-bottom: 1rem;
+    }
+    
+    .btn-group {
+        flex-direction: column;
+    }
+    
+    .btn-group .btn {
+        border-radius: 0.375rem !important;
+        margin-bottom: 0.25rem;
+    }
+}
+
+/* Loading spinner */
+.loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255,255,255,.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Year sections */
+.year-section {
+    border-left: 3px solid #007bff;
+    padding-left: 1rem;
+    margin-left: 1rem;
+}
+
+/* Custom badges */
+.badge.fs-6 {
+    font-size: 1rem !important;
+}
+
+/* Charts */
+canvas {
+    max-height: 400px;
+}

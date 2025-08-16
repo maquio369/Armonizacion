@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestión de Documentos - Panel de Administración{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="text-primary">
+                <i class="fas fa-list me-2"></i>
+                Gestión de Documentos
+            </h1>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <a href="{% url 'administracion:documento_create' %}" class="btn btn-success">
+                <i class="fas fa-plus me-1"></i>Nuevo Documento
+            </a>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Ley</label>
+                    <select name="ley" class="form-select">
+                        <option value="">Todas las leyes</option>
+                        {% for ley in leyes %}
+                        <option value="{{ ley.id }}" {% if request.GET.ley == ley.id|stringformat:"s" %}selected{% endif %}>
+                            {{ ley.nombre }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Año</label>
+                    <select name="año" class="form-select">
+                        <option value="">Todos los años</option>
+                        {% for año in años %}
+                        <option value="{{ año }}" {% if request.GET.año == año|stringformat:"s" %}selected{% endif %}>
+                            {{ año }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Estado</label>
+                    <select name="activo" class="form-select">
+                        <option value="">Todos</option>
+                        <option value="true" {% if request.GET.activo == "true" %}selected{% endif %}>Activos</option>
+                        <option value="false" {% if request.GET.activo == "false" %}selected{% endif %}>Inactivos</option>
+                    </select>
+                </div>
+                <div class="col-md-5 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="fas fa-filter me-1"></i>Filtrar
+                    </button>
+                    <a href="{% url 'administracion:documento_list' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times me-1"></i>Limpiar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Lista de Documentos -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            {% if documentos %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Documento</th>
+                            <th>Ley / Sub-artículo</th>
+                            <th>Año</th>
+                            <th>Trimestre</th>
+                            <th>Estado</th>
+                            <th>Fecha Subida</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for documento in documentos %}
+                        <tr>
+                            <td>
+                                <div>
+                                    <strong>{{ documento.tipo_documento.nombre }}</strong>
+                                    {% if documento.titulo_personalizado %}
+                                    <br><small class="text-muted">{{ documento.titulo_personalizado }}</small>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td>
+                                <small class="text-muted">{{ documento.tipo_documento.subarticulo.ley.nombre }}</small><br>
+                                <strong>{{ documento.tipo_documento.subarticulo.nombre }}</strong>
+                            </td>
+                            <td>{{ documento.año }}</td>
+                            <td>
+                                {% if documento.trimestre %}
+                                <span class="badge bg-info">{{ documento.trimestre }}</span>
+                                {% else %}
+                                <span class="badge bg-warning">Anual</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if documento.activo %}
+                                <span class="badge bg-success">Activo</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Inactivo</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ documento.fecha_subida|date:"d/m/Y" }}</td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{% url 'administracion:documento_update' documento.pk %}" 
+                                       class="btn btn-outline-primary" title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'publico:descargar_documento' documento.pk %}" 
+                                       class="btn btn-outline-success" title="Descargar">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                    <a href="{% url 'administracion:documento_delete' documento.pk %}" 
+                                       class="btn btn-outline-danger" title="Eliminar">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Paginación -->
+            {% if is_paginated %}
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">Siguiente</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+                <h4 class="text-muted">No hay documentos</h4>
+                <p class="text-muted">No se encontraron documentos con los filtros seleccionados.</p>
+                <a href="{% url 'administracion:documento_create' %}" class="btn btn-primary">
+                    <i class="fas fa-plus me-1"></i>Crear primer documento
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}Eliminar Documento - Panel de Administración{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-0 shadow">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Confirmar Eliminación
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-file-pdf fa-3x text-muted mb-3"></i>
+                        <h4>¿Estás seguro de eliminar este documento?</h4>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <strong>Documento:</strong> {{ object.tipo_documento.nombre }}<br>
+                        <strong>Año:</strong> {{ object.año }}
+                        {% if object.trimestre %}<br><strong>Trimestre:</strong> {{ object.trimestre }}{% endif %}
+                        {% if object.titulo_personalizado %}<br><strong>Título:</strong> {{ object.titulo_personalizado }}{% endif %}
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Advertencia:</strong> Esta acción no se puede deshacer. El archivo PDF también será eliminado del servidor.
+                    </div>
+                    
+                    <form method="post" class="d-flex justify-content-between">
+                        {% csrf_token %}
+                        <a href="{% url 'administracion:documento_list' %}" class="btn btn-secondary">
+                            <i class="fas fa-times me-1"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash me-1"></i>Eliminar Definitivamente
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

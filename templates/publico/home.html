@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block title %}Armonización Contable - Gobierno de Chiapas{% endblock %}
+
+{% block sidebar %}
+<!-- Navegación de Leyes -->
+{% for ley in leyes %}
+<div class="ley-item">
+    <button class="ley-link load-ley" type="button" 
+            data-bs-toggle="collapse" data-bs-target="#ley{{ ley.id }}" 
+            aria-expanded="false" data-ley-id="{{ ley.id }}">
+        <div class="ley-icon">
+            <i class="{% if ley.orden == 1 %}fas fa-balance-scale{% else %}fas fa-chart-line{% endif %}"></i>
+        </div>
+        <div class="ley-text">{{ ley.nombre }}</div>
+        <div class="ley-arrow">
+            <i class="fas fa-chevron-right"></i>
+        </div>
+    </button>
+    
+    <div class="collapse subnav" id="ley{{ ley.id }}">
+        {% for subarticulo in ley.subarticulos.all %}
+        <a href="{% url 'publico:subarticulo_detail' subarticulo.id %}" class="subnav-item">
+            {{ subarticulo.nombre }}
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endfor %}
+{% endblock %}
+
+{% block content %}
+<!-- Contenido inicial (se reemplazará dinámicamente) -->
+<div class="content-header">
+    <h1 class="content-title">ARMONIZACIÓN CONTABLE</h1>
+</div>
+
+<div class="content-body">
+    <div class="row">
+        <div class="col-12 text-center mb-4">
+            <p class="lead text-muted">
+                Selecciona una ley del menú lateral para acceder a los documentos de transparencia
+            </p>
+        </div>
+    </div>
+    
+    <!-- Estadísticas -->
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="display-6 text-primary mb-2">
+                        <i class="fas fa-file-pdf"></i>
+                    </div>
+                    <h3 class="text-primary">{{ total_documentos }}</h3>
+                    <p class="text-muted mb-0">Documentos Disponibles</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="display-6 text-success mb-2">
+                        <i class="fas fa-download"></i>
+                    </div>
+                    <h3 class="text-success">{{ total_descargas }}</h3>
+                    <p class="text-muted mb-0">Descargas Realizadas</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="info-footer">
+    Actualizado al: {% now "d \d\e F \d\e Y" %}. Fuente: Coordinación Administrativa (Área de Planeación) | 
+    Conmutador: (961) 61 880 50 | Ext:21150
+</div>
+{% endblock %}
