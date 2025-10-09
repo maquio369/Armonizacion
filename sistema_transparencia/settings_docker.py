@@ -1,5 +1,6 @@
 import os
 from .settings import *
+from django.conf.urls.static import static
 
 # Configuración para producción con Docker
 DEBUG = False
@@ -24,3 +25,8 @@ MEDIA_ROOT = '/app/media'
 # Configuración de seguridad
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SECURE_SSL_REDIRECT = False
+
+# URLs de login
+LOGIN_URL = '/admin-panel/login/'
+LOGIN_REDIRECT_URL = '/admin-panel/'
+LOGOUT_REDIRECT_URL = '/admin-panel/login/'
