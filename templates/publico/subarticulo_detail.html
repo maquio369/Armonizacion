@@ -136,11 +136,7 @@
                                 <i class="fas fa-calendar me-1"></i>{{ documentos_tipo.ANUAL.fecha_subida|date:"d/m/Y" }}
                                 <i class="fas fa-weight-hanging ms-3 me-1"></i>{{ documentos_tipo.ANUAL.get_tamaño_legible }}
                             </div>
-                            <div class="documento-footer mt-2">
-                                <small class="text-muted">
-                                    Actualizado al: {% if ultima_actualizacion %}{{ ultima_actualizacion|date:"d \d\e F \d\e Y" }}{% else %}{% now "d \d\e F \d\e Y" %}{% endif %}. Fuente: Coordinación Administrativa (Área de Planeación) | Conmutador: (961) 61 880 50 | Ext:21150
-                                </small>
-                            </div>
+
                         </div>
                         <div class="d-flex gap-2">
                             <a href="{% url 'publico:visualizar_documento' documentos_tipo.ANUAL.id %}" 
@@ -192,15 +188,23 @@
                         </div>
                         {% endfor %}
                     </div>
-                    <div class="documento-footer mt-3">
-                        <small class="text-muted">
-                            Actualizado al: {% if ultima_actualizacion %}{{ ultima_actualizacion|date:"d \d\e F \d\e Y" }}{% else %}{% now "d \d\e F \d\e Y" %}{% endif %}. Fuente: Coordinación Administrativa (Área de Planeación) | Conmutador: (961) 61 880 50 | Ext:21150
-                        </small>
-                    </div>
+
                 {% endif %}
             </div>
         </div>
         {% endfor %}
+        
+        <!-- Leyenda al final de cada año -->
+        <div class="documento-footer mt-3 text-center">
+            <small class="text-muted">
+                Actualizado al: {% if ultima_actualizacion %}{{ ultima_actualizacion|date:"d \d\e F \d\e Y" }}{% else %}{% now "d \d\e F \d\e Y" %}{% endif %}. 
+                {% if 'Inventario' in subarticulo.nombre or 'Bienes' in subarticulo.nombre %}
+                    Fuente: Coordinación Administrativa (Área de Recursos Materiales y Servicios Generales) | Conmutador: (961) 61 880 50 | Ext:21200
+                {% else %}
+                    Fuente: Coordinación Administrativa (Área de Planeación) | Conmutador: (961) 61 880 50 | Ext:21150
+                {% endif %}
+            </small>
+        </div>
     </div>
     {% endif %}
     {% endfor %}

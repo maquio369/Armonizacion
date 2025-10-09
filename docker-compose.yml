@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "3021:8000"
+    environment:
+      - DB_NAME=armonizacion
+      - DB_USER=maquio
+      - DB_PASSWORD=maquio92?
+      - DB_HOST=172.16.35.75
+      - DB_PORT=32768
+    volumes:
+      - ./media:/app/media
+      - ./staticfiles:/app/staticfiles
+    restart: unless-stopped
