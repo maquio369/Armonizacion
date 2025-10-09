@@ -8,7 +8,7 @@ services:
     environment:
       - DB_NAME=armonizacion
       - DB_USER=maquio
-      - DB_PASSWORD=maquio92?
+      - DB_PASSWORD=maquio92
       - DB_HOST=172.16.35.75
       - DB_PORT=32768
     volumes:
