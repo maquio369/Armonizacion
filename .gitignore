@@ -2,5 +2,4 @@ venv_transparencia/
 *.pyc
 __pycache__/
 .env
-media/documentos/*
-!media/documentos/.gitkeep
+

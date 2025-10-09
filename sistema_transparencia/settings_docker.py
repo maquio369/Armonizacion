@@ -15,7 +15,7 @@ MIDDLEWARE = [
 ]
 
 # Configuración para producción con Docker
-DEBUG = False
+DEBUG = True  # Temporal para ver errores
 ALLOWED_HOSTS = ['172.16.35.75', 'localhost', '127.0.0.1']
 
 # Base de datos externa

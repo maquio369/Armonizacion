@@ -11,6 +11,9 @@ urlpatterns = [
     # Redirección de login
     path('login/', lambda request: redirect('/admin-panel/login/')),
     
+    # Favicon
+    path('favicon.ico', lambda request: redirect('/static/images/jamach-negro.png')),
+    
     # URLs de la aplicación pública
     path('', include('apps.publico.urls')),
     
