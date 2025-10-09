@@ -31,8 +31,16 @@ DATABASES = {
 }
 
 # Configuración de archivos estáticos para producción
+STATIC_URL = '/static/'
 STATIC_ROOT = '/app/staticfiles'
+STATICFILES_DIRS = [
+    '/app/static',
+]
+MEDIA_URL = '/media/'
 MEDIA_ROOT = '/app/media'
+
+# Configuración de whitenoise
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Configuración de seguridad
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

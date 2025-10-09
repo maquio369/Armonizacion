@@ -17,8 +17,14 @@ COPY . .
 # Crear directorios para archivos estáticos y media
 RUN mkdir -p /app/staticfiles /app/media
 
+# Verificar que los archivos estáticos existen
+RUN ls -la /app/static/
+
 # Recopilar archivos estáticos
 RUN python manage.py collectstatic --noinput --settings=sistema_transparencia.settings_docker
+
+# Verificar archivos recopilados
+RUN ls -la /app/staticfiles/
 
 # Script de inicio
 COPY docker-entrypoint.sh /docker-entrypoint.sh
