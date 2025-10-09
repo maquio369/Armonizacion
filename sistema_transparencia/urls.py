@@ -2,10 +2,14 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.shortcuts import redirect
 
 urlpatterns = [
     # Panel de administración
     path('admin/', admin.site.urls),
+    
+    # Redirección de login
+    path('login/', lambda request: redirect('/admin-panel/login/')),
     
     # URLs de la aplicación pública
     path('', include('apps.publico.urls')),
