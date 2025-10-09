@@ -2,6 +2,18 @@ import os
 from .settings import *
 from django.conf.urls.static import static
 
+# Agregar whitenoise al middleware
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+
 # Configuración para producción con Docker
 DEBUG = False
 ALLOWED_HOSTS = ['172.16.35.75', 'localhost', '127.0.0.1']
