@@ -5,13 +5,14 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.views.generic import (
-    TemplateView, ListView, CreateView, UpdateView, DeleteView
+    TemplateView, ListView, CreateView, UpdateView, DeleteView, View
 )
 from django.urls import reverse_lazy
 from django.db.models import Count, Q
 from django.http import JsonResponse
-from .models import Documento, Ley, SubArticulo, TipoDocumento, LogAcceso
+from .models import Documento, Ley, SubArticulo, TipoDocumento, LogAcceso, PerfilUsuario
 from .forms import DocumentoForm
+from django.core.exceptions import PermissionDenied
 
 
 class DashboardView(LoginRequiredMixin, TemplateView):
@@ -21,24 +22,40 @@ class DashboardView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         
+        # Filtrar documentos según el tipo de usuario
+        documentos_queryset = Documento.objects.all()
+        if hasattr(self.request.user, 'perfil'):
+            perfil = self.request.user.perfil
+            if perfil.tipo_usuario == 'RECURSOS_MATERIALES':
+                documentos_queryset = documentos_queryset.filter(
+                    tipo_documento__subarticulo__nombre__icontains='inventario'
+                ).filter(tipo_documento__subarticulo__nombre__icontains='físico')
+            elif perfil.tipo_usuario == 'PLANEACION':
+                documentos_queryset = documentos_queryset.exclude(
+                    Q(tipo_documento__subarticulo__nombre__icontains='inventario') & 
+                    Q(tipo_documento__subarticulo__nombre__icontains='físico')
+                )
+        
         # Estadísticas generales
-        context['total_documentos'] = Documento.objects.filter(activo=True).count()
-        context['total_descargas'] = LogAcceso.objects.filter(tipo_acceso='DESCARGA').count()
-        context['total_visualizaciones'] = LogAcceso.objects.filter(tipo_acceso='VISUALIZACION').count()
-        context['documentos_pendientes'] = Documento.objects.filter(activo=False).count()
+        context['total_documentos'] = documentos_queryset.filter(activo=True).count()
+        context['total_visualizaciones'] = LogAcceso.objects.filter(
+            tipo_acceso='VISUALIZACION',
+            documento__in=documentos_queryset
+        ).count()
+        context['documentos_pendientes'] = documentos_queryset.filter(activo=False).count()
         
         # Documentos recientes
-        context['documentos_recientes'] = Documento.objects.filter(
+        context['documentos_recientes'] = documentos_queryset.filter(
             activo=True
         ).order_by('-fecha_subida')[:5]
         
-        # Documentos más descargados
-        documentos_populares = Documento.objects.filter(
+        # Documentos más vistos
+        documentos_mas_vistos = documentos_queryset.filter(
             activo=True
         ).annotate(
-            num_descargas=Count('logs_acceso', filter=Q(logs_acceso__tipo_acceso='DESCARGA'))
-        ).order_by('-num_descargas')[:5]
-        context['documentos_populares'] = documentos_populares
+            num_visualizaciones=Count('logs_acceso', filter=Q(logs_acceso__tipo_acceso='VISUALIZACION'))
+        ).order_by('-num_visualizaciones')[:5]
+        context['documentos_mas_vistos'] = documentos_mas_vistos
         
         # Distribución por ley
         distribucion_leyes = Ley.objects.annotate(
@@ -60,7 +77,22 @@ class DocumentoListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         queryset = Documento.objects.all().order_by('-fecha_subida')
         
-        # Filtros
+        # Filtrar según el tipo de usuario
+        if hasattr(self.request.user, 'perfil'):
+            perfil = self.request.user.perfil
+            if perfil.tipo_usuario == 'RECURSOS_MATERIALES':
+                # Solo documentos del subarticulo inventarios físicos de bienes
+                queryset = queryset.filter(
+                    tipo_documento__subarticulo__nombre__icontains='inventario'
+                ).filter(tipo_documento__subarticulo__nombre__icontains='físico')
+            elif perfil.tipo_usuario == 'PLANEACION':
+                # Todo excepto documentos del subarticulo inventarios físicos de bienes
+                queryset = queryset.exclude(
+                    Q(tipo_documento__subarticulo__nombre__icontains='inventario') & 
+                    Q(tipo_documento__subarticulo__nombre__icontains='físico')
+                )
+        
+        # Filtros adicionales
         ley_id = self.request.GET.get('ley')
         subarticulo_id = self.request.GET.get('subarticulo')
         año = self.request.GET.get('año')
@@ -94,7 +126,19 @@ class DocumentoCreateView(LoginRequiredMixin, CreateView):
     template_name = 'admin/documento_form.html'
     success_url = reverse_lazy('administracion:documento_list')
     
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+    
     def form_valid(self, form):
+        # Verificar permisos antes de guardar
+        if hasattr(self.request.user, 'perfil'):
+            perfil = self.request.user.perfil
+            if not perfil.puede_subir_documento(form.instance.tipo_documento):
+                messages.error(self.request, 'No tiene permisos para subir este tipo de documento.')
+                return self.form_invalid(form)
+        
         form.instance.usuario_subida = self.request.user
         messages.success(self.request, 'Documento creado exitosamente.')
         return super().form_valid(form)
@@ -111,7 +155,19 @@ class DocumentoUpdateView(LoginRequiredMixin, UpdateView):
     template_name = 'admin/documento_form.html'
     success_url = reverse_lazy('administracion:documento_list')
     
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+    
     def form_valid(self, form):
+        # Verificar permisos antes de actualizar
+        if hasattr(self.request.user, 'perfil'):
+            perfil = self.request.user.perfil
+            if not perfil.puede_subir_documento(form.instance.tipo_documento):
+                messages.error(self.request, 'No tiene permisos para editar este tipo de documento.')
+                return self.form_invalid(form)
+        
         messages.success(self.request, 'Documento actualizado exitosamente.')
         return super().form_valid(form)
     
@@ -177,3 +233,20 @@ class EstadisticasView(LoginRequiredMixin, TemplateView):
         context['top_ips'] = top_ips
         
         return context
+
+
+class TipoDocumentoPeriodicidadAPIView(LoginRequiredMixin, View):
+    """API para obtener la periodicidad de un tipo de documento"""
+    
+    def get(self, request, tipo_id):
+        try:
+            tipo_documento = get_object_or_404(TipoDocumento, id=tipo_id, activo=True)
+            return JsonResponse({
+                'periodicidad': tipo_documento.subarticulo.periodicidad,
+                'nombre': tipo_documento.nombre,
+                'subarticulo': tipo_documento.subarticulo.nombre
+            })
+        except Exception as e:
+            return JsonResponse({
+                'error': str(e)
+            }, status=404)

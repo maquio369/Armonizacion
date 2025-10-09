@@ -1,224 +1,165 @@
-{% extends 'base.html' %}
+{% extends 'admin/base_admin.html' %}
 {% load static %}
 
-{% block title %}Dashboard - Panel de Administración{% endblock %}
-
-{% block extra_css %}
-<style>
-.stats-card {
-    border-left: 4px solid #0d6efd;
-    transition: transform 0.2s;
-}
-.stats-card:hover {
-    transform: translateY(-2px);
-}
-.quick-action {
-    transition: all 0.3s ease;
-}
-.quick-action:hover {
-    transform: scale(1.02);
-}
-</style>
-{% endblock %}
+{% block title %}Inicio - Panel Administrativo{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-    <!-- Header -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <h1 class="text-primary">
-                <i class="fas fa-tachometer-alt me-2"></i>
-                Dashboard de Administración
-            </h1>
-            <p class="text-muted">Bienvenido, {{ user.get_full_name|default:user.username }}</p>
-        </div>
-    </div>
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+    <h1 class="h2"><img src="{% static 'images/logo-humanismo(72x108).png' %}" alt="Logo" style="height: 32px; width: auto; margin-right: 8px;">Inicio</h1>
+</div>
 
-    <!-- Estadísticas -->
-    <div class="row mb-5">
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card border-0 shadow-sm stats-card">
-                <div class="card-body text-center">
-                    <div class="display-6 text-primary mb-2">
-                        <i class="fas fa-file-pdf"></i>
+<!-- Estadísticas principales -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Documentos Activos</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_documentos }}</div>
                     </div>
-                    <h3 class="text-primary">{{ total_documentos }}</h3>
-                    <p class="text-muted mb-0">Documentos Activos</p>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card border-0 shadow-sm stats-card">
-                <div class="card-body text-center">
-                    <div class="display-6 text-success mb-2">
-                        <i class="fas fa-download"></i>
+                    <div class="col-auto">
+                        <i class="fas fa-file-pdf fa-2x text-gray-300"></i>
                     </div>
-                    <h3 class="text-success">{{ total_descargas }}</h3>
-                    <p class="text-muted mb-0">Descargas Totales</p>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card border-0 shadow-sm stats-card">
-                <div class="card-body text-center">
-                    <div class="display-6 text-info mb-2">
-                        <i class="fas fa-eye"></i>
-                    </div>
-                    <h3 class="text-info">{{ total_visualizaciones }}</h3>
-                    <p class="text-muted mb-0">Visualizaciones</p>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card border-0 shadow-sm stats-card">
-                <div class="card-body text-center">
-                    <div class="display-6 text-warning mb-2">
-                        <i class="fas fa-clock"></i>
-                    </div>
-                    <h3 class="text-warning">{{ documentos_pendientes }}</h3>
-                    <p class="text-muted mb-0">Pendientes</p>
                 </div>
             </div>
         </div>
     </div>
+    
 
-    <!-- Acciones Rápidas -->
-    <div class="row mb-5">
-        <div class="col-12">
-            <h3 class="mb-3">
-                <i class="fas fa-bolt me-2"></i>
-                Acciones Rápidas
-            </h3>
-        </div>
-        
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card border-0 shadow-sm quick-action h-100">
-                <div class="card-body text-center">
-                    <i class="fas fa-plus-circle fa-2x text-success mb-3"></i>
-                    <h5>Subir Documento</h5>
-                    <p class="text-muted small">Agregar nuevo documento PDF</p>
-                    <a href="{% url 'administracion:documento_create' %}" class="btn btn-success">
-                        <i class="fas fa-upload me-1"></i>Subir
-                    </a>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card border-0 shadow-sm quick-action h-100">
-                <div class="card-body text-center">
-                    <i class="fas fa-list fa-2x text-primary mb-3"></i>
-                    <h5>Ver Documentos</h5>
-                    <p class="text-muted small">Gestionar documentos existentes</p>
-                    <a href="{% url 'administracion:documento_list' %}" class="btn btn-primary">
-                        <i class="fas fa-eye me-1"></i>Ver Lista
-                    </a>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card border-0 shadow-sm quick-action h-100">
-                <div class="card-body text-center">
-                    <i class="fas fa-chart-bar fa-2x text-info mb-3"></i>
-                    <h5>Estadísticas</h5>
-                    <p class="text-muted small">Ver reportes detallados</p>
-                    <a href="{% url 'administracion:estadisticas' %}" class="btn btn-info">
-                        <i class="fas fa-chart-line me-1"></i>Ver Stats
-                    </a>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card border-0 shadow-sm quick-action h-100">
-                <div class="card-body text-center">
-                    <i class="fas fa-cogs fa-2x text-secondary mb-3"></i>
-                    <h5>Django Admin</h5>
-                    <p class="text-muted small">Panel de administración completo</p>
-                    <a href="{% url 'admin:index' %}" class="btn btn-secondary">
-                        <i class="fas fa-external-link-alt me-1"></i>Ir al Admin
-                    </a>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Visualizaciones</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_visualizaciones }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-eye fa-2x text-gray-300"></i>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Documentos Recientes y Populares -->
-    <div class="row">
-        <!-- Documentos Recientes -->
-        <div class="col-lg-6 mb-4">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white border-bottom">
-                    <h5 class="mb-0">
-                        <i class="fas fa-clock me-2 text-primary"></i>
-                        Documentos Recientes
-                    </h5>
-                </div>
-                <div class="card-body">
-                    {% if documentos_recientes %}
-                    <div class="list-group list-group-flush">
-                        {% for documento in documentos_recientes %}
-                        <div class="list-group-item border-0 px-0">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-1">{{ documento.tipo_documento.nombre }}</h6>
-                                    <p class="mb-1 small text-muted">
-                                        {{ documento.año }}{% if documento.trimestre %} - {{ documento.trimestre }}{% endif %}
-                                    </p>
-                                    <small class="text-muted">{{ documento.fecha_subida|date:"d/m/Y H:i" }}</small>
-                                </div>
-                                <span class="badge bg-{% if documento.activo %}success{% else %}warning{% endif %}">
-                                    {% if documento.activo %}Activo{% else %}Pendiente{% endif %}
-                                </span>
-                            </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Tipo de Usuario</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            {% if user.is_superuser %}
+                                Super Admin
+                            {% elif user.perfil.tipo_usuario == 'RECURSOS_MATERIALES' %}
+                                Recursos Materiales
+                            {% elif user.perfil.tipo_usuario == 'PLANEACION' %}
+                                Planeación
+                            {% else %}
+                                Administrador
+                            {% endif %}
                         </div>
-                        {% endfor %}
                     </div>
-                    {% else %}
-                    <p class="text-muted text-center mb-0">No hay documentos recientes</p>
-                    {% endif %}
+                    <div class="col-auto">
+                        <i class="fas fa-user-shield fa-2x text-gray-300"></i>
+                    </div>
                 </div>
             </div>
         </div>
-
-        <!-- Documentos Populares -->
-        <div class="col-lg-6 mb-4">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white border-bottom">
-                    <h5 class="mb-0">
-                        <i class="fas fa-fire me-2 text-danger"></i>
-                        Documentos Populares
-                    </h5>
-                </div>
-                <div class="card-body">
-                    {% if documentos_populares %}
-                    <div class="list-group list-group-flush">
-                        {% for documento in documentos_populares %}
-                        <div class="list-group-item border-0 px-0">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-1">{{ documento.tipo_documento.nombre }}</h6>
-                                    <p class="mb-1 small text-muted">
-                                        {{ documento.año }}{% if documento.trimestre %} - {{ documento.trimestre }}{% endif %}
-                                    </p>
-                                </div>
-                                <span class="badge bg-primary">
-                                    {{ documento.num_descargas }} descargas
-                                </span>
-                            </div>
-                        </div>
-                        {% endfor %}
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Pendientes</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ documentos_pendientes }}</div>
                     </div>
-                    {% else %}
-                    <p class="text-muted text-center mb-0">No hay estadísticas disponibles</p>
-                    {% endif %}
+                    <div class="col-auto">
+                        <i class="fas fa-clock fa-2x text-gray-300"></i>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<div class="row">
+    <!-- Documentos recientes -->
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between" style="background-color: #1a6146;">
+                <h6 class="m-0 font-weight-bold text-white">Documentos Recientes</h6>
+                <a href="{% url 'administracion:documento_create' %}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus me-1"></i>Nuevo
+                </a>
+            </div>
+            <div class="card-body">
+                {% for documento in documentos_recientes %}
+                <div class="d-flex align-items-center mb-3">
+                    <div class="me-3">
+                        <i class="fas fa-file-pdf text-danger fa-lg"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="fw-bold">{{ documento.tipo_documento.nombre }}</div>
+                        <small class="text-muted">{{ documento.año }}{% if documento.trimestre %} - {{ documento.get_trimestre_display }}{% endif %}</small>
+                    </div>
+                    <div class="text-end">
+                        <small class="text-muted">{{ documento.fecha_subida|date:"d/m/Y" }}</small>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted text-center">No hay documentos recientes</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Documentos más vistos -->
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow">
+            <div class="card-header py-3" style="background-color: #1a6146;">
+                <h6 class="m-0 font-weight-bold text-white">Más Vistos</h6>
+            </div>
+            <div class="card-body">
+                {% for documento in documentos_mas_vistos %}
+                <div class="d-flex align-items-center mb-3">
+                    <div class="me-3">
+                        <i class="fas fa-eye text-info fa-lg"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="fw-bold">{{ documento.tipo_documento.nombre }}</div>
+                        <small class="text-muted">{{ documento.año }}{% if documento.trimestre %} - {{ documento.get_trimestre_display }}{% endif %}</small>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge bg-info">{{ documento.num_visualizaciones }} vistas</span>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted text-center">No hay estadísticas disponibles</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.border-left-primary {
+    border-left: 0.25rem solid #4e73df !important;
+}
+.border-left-success {
+    border-left: 0.25rem solid #1cc88a !important;
+}
+.border-left-info {
+    border-left: 0.25rem solid #36b9cc !important;
+}
+.border-left-warning {
+    border-left: 0.25rem solid #f6c23e !important;
+}
+</style>
 {% endblock %}

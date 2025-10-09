@@ -3,7 +3,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>{% block title %}Armonización Contable - Gobierno de Chiapas{% endblock %}</title>
     
     <!-- Bootstrap CSS -->
@@ -25,25 +25,25 @@
                 <div class="col-md-3">
                     <div class="logo-section d-flex align-items-center">
                         <!-- Botón Toggle en el header -->
-                        <button class="sidebar-toggle-btn me-3" type="button" onclick="toggleSidebar()">
+                        <button class="sidebar-toggle-btn me-3 d-none d-md-block" type="button" onclick="handleSidebar()">
                             <i class="fas fa-bars"></i>
                         </button>
-                        <button class="btn-menu d-md-none me-3" type="button">
+                        <button class="btn-menu d-md-none me-3" type="button" onclick="handleSidebar()">
                             <i class="fas fa-bars text-white"></i>
                         </button>
                         <div class="logo-gov">
-                            <i class="fas fa-mountain text-white me-2"></i>
-                            <span class="logo-text text-white fw-bold">ARMONIZACIÓN CONTABLE</span>
+                            <img src="{% static 'images/jamach-negro.png' %}" alt="Logo" class="navbar-logo me-2">
+                            <span class="logo-text text-white fw-bold" style="white-space: nowrap; font-size: 0.85rem;">ARMONIZACIÓN CONTABLE</span>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-9">
                     <nav class="nav-principal d-none d-md-flex justify-content-end">
-                        <a href="#" class="nav-link text-white">Participa</a>
-                        <a href="#" class="nav-link text-white">Trámites</a>
-                        <a href="#" class="nav-link text-white">Gobierno</a>
-                        <a href="#" class="nav-link text-white">Transparencia</a>
-                        <a href="#" class="nav-link text-white">chiapas.gob.mx</a>
+                        <a href="https://chiapas.gob.mx/participa/" class="nav-link text-white" target="_blank">Participa</a>
+                        <a href="https://chiapas.gob.mx/servicios-por-entidad/" class="nav-link text-white" target="_blank">Trámites</a>
+                        <a href="https://chiapas.gob.mx/gobierno/" class="nav-link text-white" target="_blank">Gobierno</a>
+                        <a href="http://oficinadelgobernador.transparencia.chiapas.gob.mx/" class="nav-link text-white" target="_blank">Transparencia</a>
+                        <a href="https://chiapas.gob.mx/" class="nav-link text-white" target="_blank">chiapas.gob.mx</a>
                     </nav>
                 </div>
             </div>
@@ -110,12 +110,10 @@
                         <!-- Logo dentro del sidebar -->
                         <div class="sidebar-logo-section">
                             {% block logo_personalizado %}
-                            <!-- Aquí va tu logo personalizado -->
-                            <div class="logo-placeholder">
-                                <div class="text-center text-white">
-                                    <i class="fas fa-image fa-2x mb-2"></i>
-                                    <div class="small">Tu Logo Aquí</div>
-                                </div>
+                            <div class="text-center">
+                                <img src="{% static 'images/logo-humanismo(72x108).png' %}" 
+                                     alt="Logo Gobierno de Chiapas" 
+                                     class="logo-custom">
                             </div>
                             {% endblock %}
                         </div>
@@ -152,22 +150,90 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <!-- Sidebar Toggle Script -->
-    <script>
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebarContainer');
-            
+<script>
+    function handleSidebar() {
+        const sidebar = document.getElementById('sidebarContainer');
+        const isMobile = window.innerWidth < 768;
+
+        if (isMobile) {
+            sidebar.classList.toggle('show');
+            if (sidebar.classList.contains('show')) {
+                addMobileOverlay();
+            } else {
+                removeMobileOverlay();
+            }
+        } else {
             sidebar.classList.toggle('collapsed');
             updateToggleIcon();
         }
-        
-        // Auto-colapsar en pantallas pequeñas
-        function checkScreenSize() {
-            const sidebar = document.getElementById('sidebarContainer');
-            if (window.innerWidth < 768) {
-                sidebar.classList.add('collapsed');
-                updateToggleIcon();
-            }
+    }
+
+    function addMobileOverlay() {
+        let overlay = document.getElementById('mobile-overlay');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'mobile-overlay';
+            overlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                z-index: 1040; /* Ensure it's on top of content but below sidebar */
+            `;
+            overlay.onclick = handleSidebar; // Click overlay to close
+            document.body.appendChild(overlay);
         }
+    }
+
+    function removeMobileOverlay() {
+        const overlay = document.getElementById('mobile-overlay');
+        if (overlay) {
+            overlay.remove();
+        }
+    }
+
+    function checkScreenSize() {
+        const sidebar = document.getElementById('sidebarContainer');
+        const isMobile = window.innerWidth < 768;
+
+        if (isMobile) {
+            sidebar.classList.add('collapsed');
+            // Ensure the 'show' class is removed on resize if sidebar was open
+            if (sidebar.classList.contains('show')) {
+                sidebar.classList.remove('show');
+                removeMobileOverlay();
+            }
+        } else {
+            // On desktop, ensure mobile-specific classes are removed
+            sidebar.classList.remove('show');
+            removeMobileOverlay();
+        }
+        updateToggleIcon();
+    }
+
+    function updateToggleIcon() {
+        const sidebar = document.getElementById('sidebarContainer');
+        const toggleBtn = document.querySelector('.sidebar-toggle-btn');
+        if (!toggleBtn) return; // Button might not exist in all views
+        const icon = toggleBtn.querySelector('i');
+        
+        if (sidebar.classList.contains('collapsed')) {
+            icon.className = 'fas fa-chevron-right';
+        } else {
+            icon.className = 'fas fa-bars';
+        }
+    }
+
+    // Event Listeners
+    document.addEventListener('DOMContentLoaded', function() {
+        checkScreenSize();
+        updateToggleIcon(); // Set initial icon state
+    });
+
+    window.addEventListener('resize', checkScreenSize);
+
         
         // Función para cargar sub-artículos dinámicamente
 
@@ -375,8 +441,14 @@ function checkScreenSize() {
     }
 }
 
+// Variable para evitar múltiples inicializaciones
+let isInitialized = false;
+
 // Inicialización cuando el DOM está listo
 document.addEventListener('DOMContentLoaded', function() {
+    if (isInitialized) return;
+    isInitialized = true;
+    
     // Cargar los sub-artículos
     loadSubArticulos();
     
@@ -508,8 +580,14 @@ function updateActiveNavigation(breadcrumb) {
     }
 }
 
+// Variable para rastrear si los listeners ya fueron agregados
+let contentListenersAdded = false;
+
 // Función para inicializar event listeners del contenido
 function initializeContentEventListeners() {
+    if (contentListenersAdded) return;
+    contentListenersAdded = true;
+    
     // Event listeners para botones de sub-artículos
     document.querySelectorAll('.load-subarticulo').forEach(button => {
         button.addEventListener('click', function(e) {
@@ -574,7 +652,7 @@ function updateHoverPanelLinks() {
 
 // Actualizar la función de inicialización
 document.addEventListener('DOMContentLoaded', function() {
-    // ... código existente ...
+    if (isInitialized) return;
     
     // Inicializar navegación dinámica
     initializeContentEventListeners();

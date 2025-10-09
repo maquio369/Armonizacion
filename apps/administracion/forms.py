@@ -1,5 +1,6 @@
 from django import forms
-from .models import Documento, TipoDocumento, SubArticulo
+from django.db.models import Q
+from .models import Documento, TipoDocumento, SubArticulo, PerfilUsuario
 
 
 class DocumentoForm(forms.ModelForm):
@@ -8,53 +9,65 @@ class DocumentoForm(forms.ModelForm):
     class Meta:
         model = Documento
         fields = [
-            'tipo_documento', 'año', 'trimestre', 'archivo', 
-            'titulo_personalizado', 'descripcion', 'activo'
+            'tipo_documento', 'año', 'trimestre', 'archivo', 'activo'
         ]
         widgets = {
             'tipo_documento': forms.Select(attrs={
                 'class': 'form-select',
                 'id': 'id_tipo_documento'
             }),
-            'año': forms.Select(attrs={'class': 'form-select'}),
+            'año': forms.Select(attrs={
+                'class': 'form-select',
+                'placeholder': 'Seleccione el año'
+            }),
             'trimestre': forms.Select(attrs={
                 'class': 'form-select',
-                'id': 'id_trimestre'
+                'id': 'id_trimestre',
+                'placeholder': 'Seleccione el trimestre'
             }),
             'archivo': forms.FileInput(attrs={
                 'class': 'form-control',
                 'accept': '.pdf'
             }),
-            'titulo_personalizado': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Título personalizado (opcional)'
-            }),
-            'descripcion': forms.Textarea(attrs={
-                'class': 'form-control',
-                'rows': 3,
-                'placeholder': 'Descripción del documento (opcional)'
-            }),
+
             'activo': forms.CheckboxInput(attrs={'class': 'form-check-input'})
         }
         labels = {
             'tipo_documento': 'Tipo de Documento',
             'año': 'Año',
-            'trimestre': 'Trimestre',
+            'trimestre': 'Periodicidad (opcional)',
             'archivo': 'Archivo PDF',
-            'titulo_personalizado': 'Título Personalizado',
-            'descripcion': 'Descripción',
+
             'activo': 'Documento Activo'
         }
     
     def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
         
-        # Personalizar el queryset de tipo_documento para mostrarlo organizado
-        self.fields['tipo_documento'].queryset = TipoDocumento.objects.select_related(
+        # Personalizar el queryset de tipo_documento según el tipo de usuario
+        queryset = TipoDocumento.objects.select_related(
             'subarticulo__ley'
         ).filter(activo=True).order_by(
             'subarticulo__ley__orden', 'subarticulo__orden', 'orden'
         )
+        
+        # Filtrar según el tipo de usuario
+        if self.user and hasattr(self.user, 'perfil'):
+            perfil = self.user.perfil
+            if perfil.tipo_usuario == 'RECURSOS_MATERIALES':
+                # Solo documentos del subarticulo inventarios físicos de bienes
+                queryset = queryset.filter(
+                    subarticulo__nombre__icontains='inventario'
+                ).filter(subarticulo__nombre__icontains='físico')
+            elif perfil.tipo_usuario == 'PLANEACION':
+                # Todo excepto documentos del subarticulo inventarios físicos de bienes
+                queryset = queryset.exclude(
+                    Q(subarticulo__nombre__icontains='inventario') & 
+                    Q(subarticulo__nombre__icontains='físico')
+                )
+        
+        self.fields['tipo_documento'].queryset = queryset
         
         # Personalizar las opciones de año
         from django.utils import timezone

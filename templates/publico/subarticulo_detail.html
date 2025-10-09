@@ -22,14 +22,66 @@
     
     <div class="collapse subnav {% if ley_item.id == subarticulo.ley.id %}show{% endif %}" id="ley{{ ley_item.id }}">
         {% for sub in ley_item.subarticulos.all %}
-        <a href="{% url 'publico:subarticulo_detail' sub.id %}" 
-           class="subnav-item {% if sub.id == subarticulo.id %}active{% endif %}">
-            {{ sub.nombre }}
-        </a>
+            {% if sub.activo %}
+            <a href="{% url 'publico:subarticulo_detail' sub.id %}" 
+               class="subnav-item {% if sub.id == subarticulo.id %}active{% endif %}">
+                {% if 'Presupuesto' in sub.nombre %}
+                    <i class="fas fa-file-invoice-dollar me-2"></i>
+                {% elif 'Contable' in sub.nombre %}
+                    <i class="fas fa-calculator me-2"></i>
+                {% elif 'Presupuestaria' in sub.nombre %}
+                    <i class="fas fa-chart-bar me-2"></i>
+                {% elif 'Programática' in sub.nombre %}
+                    <i class="fas fa-project-diagram me-2"></i>
+                {% elif 'Ayudas' in sub.nombre or 'Subsidios' in sub.nombre %}
+                    <i class="fas fa-hand-holding-usd me-2"></i>
+                {% elif 'Cuenta Pública' in sub.nombre %}
+                    <i class="fas fa-file-contract me-2"></i>
+                {% elif 'Cualitativa' in sub.nombre %}
+                    <i class="fas fa-clipboard-check me-2"></i>
+                {% elif 'Inventario' in sub.nombre or 'Bienes' in sub.nombre %}
+                    <i class="fas fa-boxes me-2"></i>
+                {% elif 'Disciplina' in sub.nombre %}
+                    <i class="fas fa-gavel me-2"></i>
+                {% elif 'Anexos' in sub.nombre %}
+                    <i class="fas fa-paperclip me-2"></i>
+                {% else %}
+                    <i class="fas fa-file-alt me-2"></i>
+                {% endif %}
+                {{ sub.nombre }}
+            </a>
+            {% endif %}
+        {% empty %}
+        <div class="subnav-item text-muted">
+            <i class="fas fa-info-circle me-2"></i>
+            No hay artículos disponibles
+        </div>
         {% endfor %}
     </div>
 </div>
 {% endfor %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.year-btn.active {
+    background-color: #d80169 !important;
+    border-color: #d80169 !important;
+    color: white !important;
+}
+.card-title {
+    color: #d80169 !important;
+}
+.btn-outline-primary {
+    background-color: #b9363f !important;
+    border-color: #b9363f !important;
+    color: white !important;
+}
+.btn-outline-primary:hover {
+    background-color: #a02d35 !important;
+    border-color: #a02d35 !important;
+}
+</style>
 {% endblock %}
 
 {% block content %}
@@ -45,18 +97,15 @@
 </div>
 
 <!-- Contenido Principal -->
-<div class="content-body">
+<div class="content-body" style="margin-top: -1.5rem;">
     <!-- Navegación de Años -->
     {% if años_disponibles %}
-    <div class="years-nav justify-content-center mb-4">
+    <div class="years-nav justify-content-center mb-2">
         {% for año in años_disponibles %}
-        <a href="?año={{ año }}" class="year-btn {% if request.GET.año == año|stringformat:'s' %}active{% endif %}">
+        <a href="?año={{ año }}" class="year-btn {% if request.GET.año == año|stringformat:'s' or not request.GET.año and año == current_year %}active{% endif %}">
             {{ año }}
         </a>
         {% endfor %}
-        <a href="{% url 'publico:subarticulo_detail' subarticulo.id %}" class="year-btn {% if not request.GET.año %}active{% endif %}">
-            Todos
-        </a>
     </div>
     {% endif %}
 
@@ -64,13 +113,10 @@
     {% if documentos_agrupados %}
     {% for año, tipos_año in documentos_agrupados.items %}
     {% if not request.GET.año or request.GET.año == año|stringformat:'s' %}
-    <div class="year-section mb-5">
-        <h3 class="text-center mb-4 text-primary">
-            <i class="fas fa-calendar-alt me-2"></i>Año {{ año }}
-        </h3>
+    <div class="year-section mb-3">
         
         {% for tipo_documento, documentos_tipo in tipos_año.items %}
-        <div class="card mb-4 border-0 shadow-sm">
+        <div class="card mb-3 border-0 shadow-sm">
             <div class="card-header bg-light border-bottom-0">
                 <h5 class="mb-0 text-dark">
                     <i class="fas fa-file-pdf me-2 text-danger"></i>
@@ -90,12 +136,18 @@
                                 <i class="fas fa-calendar me-1"></i>{{ documentos_tipo.ANUAL.fecha_subida|date:"d/m/Y" }}
                                 <i class="fas fa-weight-hanging ms-3 me-1"></i>{{ documentos_tipo.ANUAL.get_tamaño_legible }}
                             </div>
+                            <div class="documento-footer mt-2">
+                                <small class="text-muted">
+                                    Actualizado al: {% if ultima_actualizacion %}{{ ultima_actualizacion|date:"d \d\e F \d\e Y" }}{% else %}{% now "d \d\e F \d\e Y" %}{% endif %}. Fuente: Coordinación Administrativa (Área de Planeación) | Conmutador: (961) 61 880 50 | Ext:21150
+                                </small>
+                            </div>
                         </div>
-                        <a href="{% url 'publico:descargar_documento' documentos_tipo.ANUAL.id %}" 
-                           class="download-btn">
-                            <i class="fas fa-download"></i>
-                            Descargar PDF
-                        </a>
+                        <div class="d-flex gap-2">
+                            <a href="{% url 'publico:visualizar_documento' documentos_tipo.ANUAL.id %}" 
+                               class="download-btn" target="_blank">
+                                <i class="fas fa-eye me-1"></i>Ver
+                            </a>
+                        </div>
                     </div>
                     {% else %}
                     <div class="no-disponible">
@@ -113,28 +165,37 @@
                                     <h6 class="card-title text-primary">
                                         <i class="fas fa-calendar-check me-1"></i>{{ trimestre }}
                                     </h6>
-                                    {% if documentos_tipo|lookup:trimestre %}
+                                    {% with documento=documentos_tipo|lookup:trimestre %}
+                                    {% if documento %}
                                     <div class="mt-auto">
                                         <p class="card-text small text-muted mb-2">
-                                            {{ documentos_tipo|lookup:trimestre.get_tamaño_legible }}
+                                            {{ documento.get_tamaño_legible }}
                                         </p>
-                                        <a href="{% url 'publico:descargar_documento' documentos_tipo|lookup:trimestre.id %}" 
-                                           class="download-btn w-100">
-                                            <i class="fas fa-download me-1"></i>Descargar
-                                        </a>
+                                        <div class="d-flex flex-column gap-1">
+                                            <a href="{% url 'publico:visualizar_documento' documento.id %}" 
+                                               class="download-btn w-100 text-center" target="_blank">
+                                                <i class="fas fa-eye me-1"></i>Ver
+                                            </a>
+                                        </div>
                                     </div>
                                     {% else %}
                                     <div class="mt-auto">
                                         <p class="text-muted small mb-2">No disponible</p>
                                         <button class="btn btn-outline-secondary btn-sm w-100" disabled>
-                                            <i class="fas fa-times me-1"></i>N/A
+                                            N/D
                                         </button>
                                     </div>
                                     {% endif %}
+                                    {% endwith %}
                                 </div>
                             </div>
                         </div>
                         {% endfor %}
+                    </div>
+                    <div class="documento-footer mt-3">
+                        <small class="text-muted">
+                            Actualizado al: {% if ultima_actualizacion %}{{ ultima_actualizacion|date:"d \d\e F \d\e Y" }}{% else %}{% now "d \d\e F \d\e Y" %}{% endif %}. Fuente: Coordinación Administrativa (Área de Planeación) | Conmutador: (961) 61 880 50 | Ext:21150
+                        </small>
                     </div>
                 {% endif %}
             </div>
@@ -152,9 +213,5 @@
     {% endif %}
 </div>
 
-<!-- Información Footer -->
-<div class="info-footer">
-    Actualizado al: {% now "d \d\e F \d\e Y" %}. Fuente: Coordinación Administrativa (Área de Planeación) | 
-    Conmutador: (961) 61 880 50 | Ext:21150
-</div>
+
 {% endblock %}

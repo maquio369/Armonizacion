@@ -15,6 +15,7 @@ urlpatterns = [
     path('api/ley/<int:ley_id>/content/', views.LeyContentAPIView.as_view(), name='api_ley_content'),
     path('api/subarticulo/<int:subarticulo_id>/content/', views.SubArticuloContentAPIView.as_view(), name='api_subarticulo_content'),
     
-    # Descarga de documentos
+    # Descarga y visualización de documentos
     path('documento/<int:documento_id>/descargar/', views.DescargarDocumentoView.as_view(), name='descargar_documento'),
+    path('documento/<int:documento_id>/ver/', views.VisualizarDocumentoView.as_view(), name='visualizar_documento'),
 ]

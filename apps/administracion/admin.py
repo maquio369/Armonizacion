@@ -1,6 +1,8 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Ley, SubArticulo, TipoDocumento, Documento, LogAcceso
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.contrib.auth.models import User
+from .models import Ley, SubArticulo, TipoDocumento, Documento, LogAcceso, PerfilUsuario
 
 
 @admin.register(Ley)
@@ -87,3 +89,28 @@ class LogAccesoAdmin(admin.ModelAdmin):
     
     def has_delete_permission(self, request, obj=None):
         return False  # No permitir eliminar logs
+
+
+@admin.register(PerfilUsuario)
+class PerfilUsuarioAdmin(admin.ModelAdmin):
+    list_display = ['user', 'tipo_usuario', 'activo', 'fecha_creacion']
+    list_filter = ['tipo_usuario', 'activo']
+    search_fields = ['user__username', 'user__first_name', 'user__last_name']
+    ordering = ['user__username']
+
+
+# Inline para mostrar perfil en el admin de usuarios
+class PerfilUsuarioInline(admin.StackedInline):
+    model = PerfilUsuario
+    can_delete = False
+    verbose_name_plural = 'Perfil de Usuario'
+
+
+# Extender el UserAdmin para incluir el perfil
+class UserAdmin(BaseUserAdmin):
+    inlines = (PerfilUsuarioInline,)
+
+
+# Re-registrar UserAdmin
+admin.site.unregister(User)
+admin.site.register(User, UserAdmin)

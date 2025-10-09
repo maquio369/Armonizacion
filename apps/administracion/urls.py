@@ -14,8 +14,10 @@ urlpatterns = [
     path('documentos/<int:pk>/editar/', views.DocumentoUpdateView.as_view(), name='documento_update'),
     path('documentos/<int:pk>/eliminar/', views.DocumentoDeleteView.as_view(), name='documento_delete'),
     
-    # Estadísticas y reportes
-    path('estadisticas/', views.EstadisticasView.as_view(), name='estadisticas'),
+    # API endpoints
+    path('api/tipo-documento/<int:tipo_id>/periodicidad/', views.TipoDocumentoPeriodicidadAPIView.as_view(), name='api_tipo_documento_periodicidad'),
+    
+
     
     # Autenticación personalizada
     path('login/', auth_views.LoginView.as_view(template_name='admin/login.html'), name='login'),

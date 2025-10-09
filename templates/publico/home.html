@@ -20,9 +20,39 @@
     
     <div class="collapse subnav" id="ley{{ ley.id }}">
         {% for subarticulo in ley.subarticulos.all %}
-        <a href="{% url 'publico:subarticulo_detail' subarticulo.id %}" class="subnav-item">
-            {{ subarticulo.nombre }}
-        </a>
+            {% if subarticulo.activo %}
+            <a href="{% url 'publico:subarticulo_detail' subarticulo.id %}" class="subnav-item">
+                {% if 'Presupuesto' in subarticulo.nombre %}
+                    <i class="fas fa-file-invoice-dollar me-2"></i>
+                {% elif 'Contable' in subarticulo.nombre %}
+                    <i class="fas fa-calculator me-2"></i>
+                {% elif 'Presupuestaria' in subarticulo.nombre %}
+                    <i class="fas fa-chart-bar me-2"></i>
+                {% elif 'Programática' in subarticulo.nombre %}
+                    <i class="fas fa-project-diagram me-2"></i>
+                {% elif 'Ayudas' in subarticulo.nombre or 'Subsidios' in subarticulo.nombre %}
+                    <i class="fas fa-hand-holding-usd me-2"></i>
+                {% elif 'Cuenta Pública' in subarticulo.nombre %}
+                    <i class="fas fa-file-contract me-2"></i>
+                {% elif 'Cualitativa' in subarticulo.nombre %}
+                    <i class="fas fa-clipboard-check me-2"></i>
+                {% elif 'Inventario' in subarticulo.nombre or 'Bienes' in subarticulo.nombre %}
+                    <i class="fas fa-boxes me-2"></i>
+                {% elif 'Disciplina' in subarticulo.nombre %}
+                    <i class="fas fa-gavel me-2"></i>
+                {% elif 'Anexos' in subarticulo.nombre %}
+                    <i class="fas fa-paperclip me-2"></i>
+                {% else %}
+                    <i class="fas fa-file-alt me-2"></i>
+                {% endif %}
+                {{ subarticulo.nombre }}
+            </a>
+            {% endif %}
+        {% empty %}
+        <div class="subnav-item text-muted">
+            <i class="fas fa-info-circle me-2"></i>
+            No hay artículos disponibles
+        </div>
         {% endfor %}
     </div>
 </div>
@@ -30,49 +60,52 @@
 {% endblock %}
 
 {% block content %}
-<!-- Contenido inicial (se reemplazará dinámicamente) -->
-<div class="content-header">
-    <h1 class="content-title">ARMONIZACIÓN CONTABLE</h1>
+<!-- Hero Section -->
+<div class="hero-section">
+    <div class="hero-content">
+        <div class="hero-icon">
+            <i class="fas fa-balance-scale"></i>
+        </div>
+        <h1 class="hero-title">ARMONIZACIÓN CONTABLE</h1>
+        <p class="hero-subtitle">Oficina del Gobernador</p>
+        <p class="hero-description">
+            Accede a los documentos oficiales de armonización contable de la Oficina del Gobernador del estado de Chiapas.
+            
+    </div>
 </div>
 
 <div class="content-body">
-    <div class="row">
-        <div class="col-12 text-center mb-4">
-            <p class="lead text-muted">
-                Selecciona una ley del menú lateral para acceder a los documentos de transparencia
-            </p>
-        </div>
-    </div>
-    
-    <!-- Estadísticas -->
-    <div class="row">
-        <div class="col-md-6 mb-3">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body text-center">
-                    <div class="display-6 text-primary mb-2">
-                        <i class="fas fa-file-pdf"></i>
-                    </div>
-                    <h3 class="text-primary">{{ total_documentos }}</h3>
-                    <p class="text-muted mb-0">Documentos Disponibles</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6 mb-3">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body text-center">
-                    <div class="display-6 text-success mb-2">
-                        <i class="fas fa-download"></i>
-                    </div>
-                    <h3 class="text-success">{{ total_descargas }}</h3>
-                    <p class="text-muted mb-0">Descargas Realizadas</p>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 
-<div class="info-footer">
-    Actualizado al: {% now "d \d\e F \d\e Y" %}. Fuente: Coordinación Administrativa (Área de Planeación) | 
-    Conmutador: (961) 61 880 50 | Ext:21150
-</div>
+
+            
+<script>
+function expandLaw(leyId) {
+    // Expandir sidebar si está colapsado
+    const sidebar = document.getElementById('sidebarContainer');
+    if (sidebar.classList.contains('collapsed')) {
+        sidebar.classList.remove('collapsed');
+        updateToggleIcon();
+    }
+    
+    // Expandir la ley correspondiente
+    const collapseElement = document.getElementById(`ley${leyId}`);
+    if (collapseElement && !collapseElement.classList.contains('show')) {
+        const bootstrap = window.bootstrap || {};
+        if (bootstrap.Collapse) {
+            new bootstrap.Collapse(collapseElement, { show: true });
+        } else {
+            collapseElement.classList.add('show');
+        }
+    }
+    
+    // Scroll al sidebar
+    setTimeout(() => {
+        const leyButton = document.querySelector(`[data-ley-id="${leyId}"]`);
+        if (leyButton) {
+            leyButton.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }, 300);
+}
+</script>
 {% endblock %}

@@ -1,6 +1,8 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.core.validators import FileExtensionValidator
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 import os
 
 # Opciones para los tipos de periodicidad
@@ -19,6 +21,47 @@ TRIMESTRE_CHOICES = [
 
 # Años disponibles
 YEAR_CHOICES = [(r, r) for r in range(2024, 2031)]
+
+# Tipos de usuario
+TIPO_USUARIO_CHOICES = [
+    ('ADMIN', 'Administrador'),
+    ('RECURSOS_MATERIALES', 'Recursos Materiales'),
+    ('PLANEACION', 'Planeación'),
+]
+
+
+class PerfilUsuario(models.Model):
+    """Perfil extendido para usuarios con permisos específicos"""
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='perfil')
+    tipo_usuario = models.CharField(max_length=20, choices=TIPO_USUARIO_CHOICES, default='ADMIN')
+    activo = models.BooleanField(default=True)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        verbose_name = "Perfil de Usuario"
+        verbose_name_plural = "Perfiles de Usuario"
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.get_tipo_usuario_display()}"
+    
+    def puede_subir_documento(self, tipo_documento):
+        """Verifica si el usuario puede subir un tipo específico de documento"""
+        if self.tipo_usuario == 'ADMIN':
+            return True
+        elif self.tipo_usuario == 'RECURSOS_MATERIALES':
+            # Solo puede subir documentos del subarticulo "Inventario Físico de Bienes"
+            return 'inventario' in tipo_documento.subarticulo.nombre.lower() and 'físico' in tipo_documento.subarticulo.nombre.lower()
+        elif self.tipo_usuario == 'PLANEACION':
+            # Puede subir todo EXCEPTO documentos del subarticulo "Inventario Físico de Bienes"
+            return not ('inventario' in tipo_documento.subarticulo.nombre.lower() and 'físico' in tipo_documento.subarticulo.nombre.lower())
+        return False
+
+
+@receiver(post_save, sender=User)
+def crear_perfil_usuario(sender, instance, created, **kwargs):
+    """Crear perfil automáticamente cuando se crea un usuario"""
+    if created:
+        PerfilUsuario.objects.get_or_create(user=instance)
 
 
 class Ley(models.Model):

@@ -1,9 +1,10 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import TemplateView, DetailView, View
 from django.http import JsonResponse, HttpResponse, Http404
 from django.contrib import messages
 from django.template.loader import render_to_string
 from apps.administracion.models import Ley, SubArticulo, TipoDocumento, Documento, LogAcceso
+from datetime import datetime
 import os
 
 
@@ -13,7 +14,10 @@ class HomeView(TemplateView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['leyes'] = Ley.objects.filter(activa=True).order_by('orden')
+        # Cargar leyes con sus sub-artículos
+        context['leyes'] = Ley.objects.filter(activa=True).prefetch_related(
+            'subarticulos'
+        ).order_by('orden')
         
         # Estadísticas generales
         context['total_documentos'] = Documento.objects.filter(activo=True).count()
@@ -47,6 +51,13 @@ class SubArticuloDetailView(DetailView):
     
     def get_queryset(self):
         return SubArticulo.objects.filter(activo=True)
+    
+    def get(self, request, *args, **kwargs):
+        # Si no hay parámetro de año, redirigir al año actual
+        if 'año' not in request.GET:
+            año_actual = datetime.now().year
+            return redirect(f'{request.path}?año={año_actual}')
+        return super().get(request, *args, **kwargs)
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -95,6 +106,17 @@ class SubArticuloDetailView(DetailView):
         context['años_disponibles'] = años_disponibles
         context['documentos_agrupados'] = documentos_agrupados
         context['trimestres'] = ['T1', 'T2', 'T3', 'T4']
+        context['current_year'] = datetime.now().year
+        
+        # Obtener fecha de última actualización para el año seleccionado
+        año_seleccionado = int(self.request.GET.get('año', datetime.now().year))
+        ultima_actualizacion = Documento.objects.filter(
+            tipo_documento__subarticulo=self.object,
+            año=año_seleccionado,
+            activo=True
+        ).order_by('-fecha_subida').first()
+        
+        context['ultima_actualizacion'] = ultima_actualizacion.fecha_subida if ultima_actualizacion else None
         
         return context
 
@@ -121,6 +143,77 @@ class DescargarDocumentoView(View):
                 return response
         except Exception as e:
             messages.error(request, 'Error al descargar el archivo.')
+            raise Http404("Error al acceder al archivo")
+
+
+class VisualizarDocumentoView(View):
+    """Vista para visualizar documentos PDF en el navegador"""
+    
+    def get(self, request, documento_id):
+        documento = get_object_or_404(Documento, id=documento_id, activo=True)
+        
+        # Verificar que el archivo existe
+        if not documento.archivo or not os.path.exists(documento.archivo.path):
+            messages.error(request, 'El archivo solicitado no está disponible.')
+            raise Http404("Archivo no encontrado")
+        
+        # Registrar el acceso
+        self._registrar_acceso(request, documento, 'VISUALIZACION')
+        
+        # Servir el archivo para visualización
+        try:
+            with open(documento.archivo.path, 'rb') as pdf_file:
+                response = HttpResponse(pdf_file.read(), content_type='application/pdf')
+                response['Content-Disposition'] = f'inline; filename="{documento.get_nombre_archivo()}"'
+                return response
+        except Exception as e:
+            messages.error(request, 'Error al visualizar el archivo.')
+            raise Http404("Error al acceder al archivo")
+    
+    def _registrar_acceso(self, request, documento, tipo_acceso):
+        """Registra el acceso al documento"""
+        ip_address = self._get_client_ip(request)
+        user_agent = request.META.get('HTTP_USER_AGENT', '')
+        
+        LogAcceso.objects.create(
+            documento=documento,
+            ip_address=ip_address,
+            user_agent=user_agent,
+            tipo_acceso=tipo_acceso
+        )
+    
+    def _get_client_ip(self, request):
+        """Obtiene la IP del cliente"""
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0]
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+        return ip
+
+
+class VisualizarDocumentoView(View):
+    """Vista para visualizar documentos PDF en el navegador"""
+    
+    def get(self, request, documento_id):
+        documento = get_object_or_404(Documento, id=documento_id, activo=True)
+        
+        # Verificar que el archivo existe
+        if not documento.archivo or not os.path.exists(documento.archivo.path):
+            messages.error(request, 'El archivo solicitado no está disponible.')
+            raise Http404("Archivo no encontrado")
+        
+        # Registrar el acceso
+        self._registrar_acceso(request, documento, 'VISUALIZACION')
+        
+        # Servir el archivo para visualización
+        try:
+            with open(documento.archivo.path, 'rb') as pdf_file:
+                response = HttpResponse(pdf_file.read(), content_type='application/pdf')
+                response['Content-Disposition'] = f'inline; filename="{documento.get_nombre_archivo()}"'
+                return response
+        except Exception as e:
+            messages.error(request, 'Error al visualizar el archivo.')
             raise Http404("Error al acceder al archivo")
     
     def _registrar_acceso(self, request, documento, tipo_acceso):

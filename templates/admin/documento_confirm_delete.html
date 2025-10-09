@@ -1,48 +1,107 @@
-{% extends 'base.html' %}
+{% extends 'admin/base_admin.html' %}
 
-{% block title %}Eliminar Documento - Panel de Administración{% endblock %}
+{% block title %}Eliminar Documento - Panel Administrativo{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card border-0 shadow">
-                <div class="card-header bg-danger text-white">
-                    <h5 class="mb-0">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        Confirmar Eliminación
-                    </h5>
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-trash me-2 text-danger"></i>Eliminar Documento</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{% url 'administracion:documento_list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Volver a la lista
+        </a>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Confirmar Eliminación
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <h6><i class="fas fa-warning me-2"></i>¡Atención!</h6>
+                    Esta acción no se puede deshacer. El documento será eliminado permanentemente del sistema.
                 </div>
-                <div class="card-body">
-                    <div class="text-center mb-4">
-                        <i class="fas fa-file-pdf fa-3x text-muted mb-3"></i>
-                        <h4>¿Estás seguro de eliminar este documento?</h4>
+                
+                <div class="row">
+                    <div class="col-md-8">
+                        <h6>Documento a eliminar:</h6>
+                        <div class="bg-light p-3 rounded">
+                            <div class="d-flex align-items-start">
+                                <i class="fas fa-file-pdf text-danger fa-2x me-3 mt-1"></i>
+                                <div>
+                                    <h6 class="mb-1">{{ object.titulo_personalizado|default:object.tipo_documento.nombre }}</h6>
+                                    <p class="mb-1"><strong>Tipo:</strong> {{ object.tipo_documento.nombre }}</p>
+                                    <p class="mb-1"><strong>Ley:</strong> {{ object.tipo_documento.subarticulo.ley.nombre }}</p>
+                                    <p class="mb-1"><strong>Sub-artículo:</strong> {{ object.tipo_documento.subarticulo.nombre }}</p>
+                                    <p class="mb-1"><strong>Año:</strong> {{ object.año }}</p>
+                                    {% if object.trimestre %}
+                                    <p class="mb-1"><strong>Trimestre:</strong> {{ object.get_trimestre_display }}</p>
+                                    {% endif %}
+                                    <p class="mb-1"><strong>Archivo:</strong> {{ object.get_nombre_archivo }}</p>
+                                    <p class="mb-1"><strong>Tamaño:</strong> {{ object.get_tamaño_legible }}</p>
+                                    <p class="mb-0"><strong>Subido:</strong> {{ object.fecha_subida|date:"d/m/Y H:i" }}</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    
-                    <div class="alert alert-info">
-                        <strong>Documento:</strong> {{ object.tipo_documento.nombre }}<br>
-                        <strong>Año:</strong> {{ object.año }}
-                        {% if object.trimestre %}<br><strong>Trimestre:</strong> {{ object.trimestre }}{% endif %}
-                        {% if object.titulo_personalizado %}<br><strong>Título:</strong> {{ object.titulo_personalizado }}{% endif %}
+                    <div class="col-md-4">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h6><i class="fas fa-info-circle me-2"></i>Información</h6>
+                                <ul class="list-unstyled mb-0">
+                                    <li><small><strong>Estado:</strong> 
+                                        {% if object.activo %}
+                                            <span class="badge bg-success">Activo</span>
+                                        {% else %}
+                                            <span class="badge bg-warning">Inactivo</span>
+                                        {% endif %}
+                                    </small></li>
+                                    {% if object.usuario_subida %}
+                                    <li><small><strong>Subido por:</strong> {{ object.usuario_subida.get_full_name|default:object.usuario_subida.username }}</small></li>
+                                    {% endif %}
+                                    <li><small><strong>Última modificación:</strong> {{ object.fecha_modificacion|date:"d/m/Y H:i" }}</small></li>
+                                </ul>
+                            </div>
+                        </div>
                     </div>
-                    
-                    <div class="alert alert-warning">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        <strong>Advertencia:</strong> Esta acción no se puede deshacer. El archivo PDF también será eliminado del servidor.
-                    </div>
-                    
-                    <form method="post" class="d-flex justify-content-between">
-                        {% csrf_token %}
-                        <a href="{% url 'administracion:documento_list' %}" class="btn btn-secondary">
+                </div>
+                
+                <form method="post" class="mt-4">
+                    {% csrf_token %}
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'administracion:documento_list' %}" class="btn btn-secondary me-md-2">
                             <i class="fas fa-times me-1"></i>Cancelar
                         </a>
+                        <a href="{% url 'administracion:documento_update' object.pk %}" class="btn btn-outline-primary me-md-2">
+                            <i class="fas fa-edit me-1"></i>Editar en su lugar
+                        </a>
                         <button type="submit" class="btn btn-danger">
-                            <i class="fas fa-trash me-1"></i>Eliminar Definitivamente
+                            <i class="fas fa-trash me-1"></i>Sí, eliminar documento
                         </button>
-                    </form>
-                </div>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Confirmar antes de eliminar
+    const deleteForm = document.querySelector('form[method="post"]');
+    const deleteButton = deleteForm.querySelector('button[type="submit"]');
+    
+    deleteButton.addEventListener('click', function(e) {
+        if (!confirm('¿Está seguro de que desea eliminar este documento? Esta acción no se puede deshacer.')) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
 {% endblock %}
