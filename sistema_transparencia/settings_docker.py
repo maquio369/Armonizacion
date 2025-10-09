@@ -16,6 +16,9 @@ MIDDLEWARE = [
 
 # Configuración para producción con Docker
 DEBUG = False
+
+# Permitir servir archivos estáticos en producción
+WHITENOISE_SKIP_COMPRESS_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'zip', 'gz', 'tgz', 'bz2', 'tbz', 'xz', 'br']
 ALLOWED_HOSTS = ['172.16.35.75', 'localhost', '127.0.0.1', 'sag.chiapas.gob.mx']
 
 # Base de datos externa
@@ -40,7 +43,9 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = '/app/media'
 
 # Configuración de whitenoise
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+WHITENOISE_USE_FINDERS = True
+WHITENOISE_AUTOREFRESH = True
 
 # Configuración de seguridad
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
