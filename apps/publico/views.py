@@ -144,31 +144,6 @@ class DescargarDocumentoView(View):
         except Exception as e:
             messages.error(request, 'Error al descargar el archivo.')
             raise Http404("Error al acceder al archivo")
-
-
-class VisualizarDocumentoView(View):
-    """Vista para visualizar documentos PDF en el navegador"""
-    
-    def get(self, request, documento_id):
-        documento = get_object_or_404(Documento, id=documento_id, activo=True)
-        
-        # Verificar que el archivo existe
-        if not documento.archivo or not os.path.exists(documento.archivo.path):
-            messages.error(request, 'El archivo solicitado no está disponible.')
-            raise Http404("Archivo no encontrado")
-        
-        # Registrar el acceso
-        self._registrar_acceso(request, documento, 'VISUALIZACION')
-        
-        # Servir el archivo para visualización
-        try:
-            with open(documento.archivo.path, 'rb') as pdf_file:
-                response = HttpResponse(pdf_file.read(), content_type='application/pdf')
-                response['Content-Disposition'] = f'inline; filename="{documento.get_nombre_archivo()}"'
-                return response
-        except Exception as e:
-            messages.error(request, 'Error al visualizar el archivo.')
-            raise Http404("Error al acceder al archivo")
     
     def _registrar_acceso(self, request, documento, tipo_acceso):
         """Registra el acceso al documento"""
