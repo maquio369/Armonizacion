@@ -91,7 +91,7 @@
     <div class="d-flex justify-content-center align-items-center mt-2">
         <span class="badge bg-{% if subarticulo.periodicidad == 'ANUAL' %}warning{% else %}info{% endif %} fs-6">
             <i class="fas fa-{% if subarticulo.periodicidad == 'ANUAL' %}calendar-alt{% else %}calendar-check{% endif %} me-1"></i>
-            {{ subarticulo.get_periodicidad_display }}
+            {{ subarticulo|periodicidad_display }}
         </span>
     </div>
 </div>
@@ -133,7 +133,7 @@
                                 {{ documentos_tipo.ANUAL.titulo_personalizado|default:tipo_documento.nombre }}
                             </div>
                             <div class="documento-meta">
-                                <i class="fas fa-calendar me-1"></i>{{ documentos_tipo.ANUAL.fecha_subida|date:"d/m/Y" }}
+                                <i class="fas fa-calendar me-1"></i>{{ documentos_tipo.ANUAL.get_fecha_mas_reciente|date:"d/m/Y" }}
                                 <i class="fas fa-weight-hanging ms-3 me-1"></i>{{ documentos_tipo.ANUAL.get_tamaño_legible }}
                             </div>
 

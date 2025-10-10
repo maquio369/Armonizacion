@@ -8,3 +8,10 @@ def lookup(dictionary, key):
     if isinstance(dictionary, dict):
         return dictionary.get(key)
     return None
+
+@register.filter
+def periodicidad_display(subarticulo):
+    """Filtro para mostrar periodicidad personalizada"""
+    if 'inventario' in subarticulo.nombre.lower() and 'físico' in subarticulo.nombre.lower():
+        return 'Bimestral'
+    return subarticulo.get_periodicidad_display()

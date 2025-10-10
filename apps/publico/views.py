@@ -110,13 +110,20 @@ class SubArticuloDetailView(DetailView):
         
         # Obtener fecha de última actualización para el año seleccionado
         año_seleccionado = int(self.request.GET.get('año', datetime.now().year))
-        ultima_actualizacion = Documento.objects.filter(
+        documentos_año = Documento.objects.filter(
             tipo_documento__subarticulo=self.object,
             año=año_seleccionado,
             activo=True
-        ).order_by('-fecha_subida').first()
+        )
         
-        context['ultima_actualizacion'] = ultima_actualizacion.fecha_subida if ultima_actualizacion else None
+        # Obtener la fecha más reciente entre subida y modificación
+        ultima_fecha = None
+        for doc in documentos_año:
+            fecha_mas_reciente = max(doc.fecha_subida, doc.fecha_modificacion)
+            if not ultima_fecha or fecha_mas_reciente > ultima_fecha:
+                ultima_fecha = fecha_mas_reciente
+        
+        context['ultima_actualizacion'] = ultima_fecha
         
         return context
 
@@ -330,6 +337,19 @@ class SubArticuloContentAPIView(View):
                             ).first()
                             documentos_agrupados[año][tipo_doc][trimestre] = documento
             
+            # Obtener fecha de última actualización
+            ultima_fecha = None
+            for año in años_a_mostrar:
+                documentos_año = Documento.objects.filter(
+                    tipo_documento__subarticulo=subarticulo,
+                    año=año,
+                    activo=True
+                )
+                for doc in documentos_año:
+                    fecha_mas_reciente = max(doc.fecha_subida, doc.fecha_modificacion)
+                    if not ultima_fecha or fecha_mas_reciente > ultima_fecha:
+                        ultima_fecha = fecha_mas_reciente
+            
             # Renderizar template parcial
             html_content = render_to_string('publico/partials/subarticulo_content.html', {
                 'subarticulo': subarticulo,
@@ -337,7 +357,8 @@ class SubArticuloContentAPIView(View):
                 'años_disponibles': años_disponibles,
                 'documentos_agrupados': documentos_agrupados,
                 'trimestres': ['T1', 'T2', 'T3', 'T4'],
-                'año_actual': año_filtro
+                'año_actual': año_filtro,
+                'ultima_actualizacion': ultima_fecha
             }, request=request)
             
             return JsonResponse({

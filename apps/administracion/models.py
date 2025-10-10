@@ -198,6 +198,10 @@ class Documento(models.Model):
                 return f"{self.tamaño_archivo:.1f} {unit}"
             self.tamaño_archivo /= 1024.0
         return f"{self.tamaño_archivo:.1f} TB"
+    
+    def get_fecha_mas_reciente(self):
+        """Obtiene la fecha más reciente entre subida y modificación"""
+        return max(self.fecha_subida, self.fecha_modificacion)
 
 
 class LogAcceso(models.Model):
