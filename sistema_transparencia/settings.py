@@ -64,11 +64,11 @@ WSGI_APPLICATION = 'sistema_transparencia.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'transparencia_db',
-        'USER': 'postgres',          # Cambiar por tu usuario de PostgreSQL
-        'PASSWORD': 'Saladin0',   # Cambiar por tu contraseña
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'NAME': 'armonizacion',
+        'USER': 'maquio',          # Cambiar por tu usuario de PostgreSQL
+        'PASSWORD': 'maquio92',   # Cambiar por tu contraseña
+        'HOST': '172.16.35.75',
+        'PORT': '32768',
     }
 }
 

@@ -235,6 +235,115 @@ class EstadisticasView(LoginRequiredMixin, TemplateView):
         return context
 
 
+class DocumentoBulkCreateView(LoginRequiredMixin, View):
+    """Vista temporal para subir múltiples trimestres a la vez"""
+    template_name = 'admin/documento_form_bulk.html'
+    
+    def get(self, request):
+        # Crear un formulario simple sin validaciones complejas
+        from django import forms
+        
+        class SimpleBulkForm(forms.Form):
+            tipo_documento = forms.ModelChoiceField(
+                queryset=TipoDocumento.objects.filter(activo=True),
+                widget=forms.Select(attrs={'class': 'form-select', 'id': 'id_tipo_documento'}),
+                label='Tipo de Documento'
+            )
+            año = forms.ChoiceField(
+                choices=[(r, r) for r in range(2019, 2031)],
+                widget=forms.Select(attrs={'class': 'form-select'}),
+                label='Año'
+            )
+        
+        form = SimpleBulkForm()
+        return render(request, self.template_name, {'form': form})
+    
+    def post(self, request):
+        from django import forms
+        
+        class SimpleBulkForm(forms.Form):
+            tipo_documento = forms.ModelChoiceField(
+                queryset=TipoDocumento.objects.filter(activo=True),
+                widget=forms.Select(attrs={'class': 'form-select', 'id': 'id_tipo_documento'}),
+                label='Tipo de Documento'
+            )
+            año = forms.ChoiceField(
+                choices=[(r, r) for r in range(2019, 2031)],
+                widget=forms.Select(attrs={'class': 'form-select'}),
+                label='Año'
+            )
+        
+        form = SimpleBulkForm(request.POST)
+        
+        if not form.is_valid():
+            messages.error(request, 'Debe seleccionar tipo de documento y año.')
+            return render(request, self.template_name, {'form': form})
+        
+        tipo_documento = form.cleaned_data['tipo_documento']
+        año = int(form.cleaned_data['año'])
+        
+        # Verificar que sea trimestral
+        if tipo_documento.subarticulo.periodicidad != 'TRIMESTRAL':
+            messages.error(request, 'Este formulario solo funciona con documentos trimestrales.')
+            return render(request, self.template_name, {'form': form})
+        
+        # Verificar permisos
+        if hasattr(request.user, 'perfil'):
+            perfil = request.user.perfil
+            if not perfil.puede_subir_documento(tipo_documento):
+                messages.error(request, 'No tiene permisos para subir este tipo de documento.')
+                return render(request, self.template_name, {'form': form})
+        
+        documentos_creados = 0
+        errores = []
+        
+        # Procesar cada trimestre
+        trimestres = ['T1', 'T2', 'T3', 'T4']
+        for i, trimestre in enumerate(trimestres, 1):
+            archivo_field = f'archivo_t{i}'
+            archivo = request.FILES.get(archivo_field)
+            
+            if archivo:
+                try:
+                    # Verificar si ya existe
+                    if Documento.objects.filter(
+                        tipo_documento=tipo_documento,
+                        año=año,
+                        trimestre=trimestre
+                    ).exists():
+                        errores.append(f'Ya existe un documento para {trimestre} del año {año}')
+                        continue
+                    
+                    # Crear documento
+                    documento = Documento(
+                        tipo_documento=tipo_documento,
+                        año=año,
+                        trimestre=trimestre,
+                        archivo=archivo,
+                        usuario_subida=request.user,
+                        activo=True
+                    )
+                    documento.save()
+                    documentos_creados += 1
+                    
+                except Exception as e:
+                    errores.append(f'Error al subir {trimestre}: {str(e)}')
+        
+        # Mostrar resultados
+        if documentos_creados > 0:
+            messages.success(request, f'Se subieron {documentos_creados} documentos exitosamente.')
+        
+        if errores:
+            for error in errores:
+                messages.warning(request, error)
+        
+        if documentos_creados == 0:
+            messages.error(request, 'No se pudo subir ningún documento.')
+            return render(request, self.template_name, {'form': form})
+        
+        return redirect('administracion:documento_list')
+
+
 class TipoDocumentoPeriodicidadAPIView(LoginRequiredMixin, View):
     """API para obtener la periodicidad de un tipo de documento"""
     

@@ -11,6 +11,7 @@ urlpatterns = [
     # Gestión de documentos
     path('documentos/', views.DocumentoListView.as_view(), name='documento_list'),
     path('documentos/nuevo/', views.DocumentoCreateView.as_view(), name='documento_create'),
+    path('documentos/nuevo-masivo/', views.DocumentoBulkCreateView.as_view(), name='documento_bulk_create'),
     path('documentos/<int:pk>/editar/', views.DocumentoUpdateView.as_view(), name='documento_update'),
     path('documentos/<int:pk>/eliminar/', views.DocumentoDeleteView.as_view(), name='documento_delete'),
     
