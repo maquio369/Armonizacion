@@ -20,7 +20,8 @@ TRIMESTRE_CHOICES = [
 ]
 
 # Años disponibles
-YEAR_CHOICES = [(r, r) for r in range(2024, 2031)]
+from datetime import datetime
+YEAR_CHOICES = [(r, r) for r in range(2019, datetime.now().year + 7)]
 
 # Tipos de usuario
 TIPO_USUARIO_CHOICES = [
