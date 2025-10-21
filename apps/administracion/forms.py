@@ -72,7 +72,7 @@ class DocumentoForm(forms.ModelForm):
         # Personalizar las opciones de año
         from django.utils import timezone
         año_actual = timezone.now().year
-        años = [(año, año) for año in range(2024, año_actual + 7)]
+        años = [(año, año) for año in range(2019, año_actual + 7)]
         self.fields['año'].choices = años
         
         # Inicialmente deshabilitar trimestre

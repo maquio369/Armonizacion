@@ -119,14 +119,14 @@ class TipoDocumento(models.Model):
 
 def documento_upload_path(instance, filename):
     """Función para generar la ruta de subida de archivos"""
-    # Crear estructura: documentos/ley/subarticulo/año/trimestre/filename
-    ley_nombre = instance.tipo_documento.subarticulo.ley.nombre.replace(' ', '_')
-    subarticulo_nombre = instance.tipo_documento.subarticulo.nombre.replace(' ', '_')
+    # Crear estructura: documentos/ley_id/subarticulo_id/año/trimestre/filename
+    ley_id = instance.tipo_documento.subarticulo.ley.id
+    subarticulo_id = instance.tipo_documento.subarticulo.id
     
     if instance.trimestre:
-        return f'documentos/{ley_nombre}/{subarticulo_nombre}/{instance.año}/{instance.trimestre}/{filename}'
+        return f'documentos/ley_{ley_id}/sub_{subarticulo_id}/{instance.año}/{instance.trimestre}/{filename}'
     else:
-        return f'documentos/{ley_nombre}/{subarticulo_nombre}/{instance.año}/{filename}'
+        return f'documentos/ley_{ley_id}/sub_{subarticulo_id}/{instance.año}/{filename}'
 
 
 class Documento(models.Model):
