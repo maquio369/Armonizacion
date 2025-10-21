@@ -167,7 +167,13 @@ html {
     padding-bottom: 0.5rem !important;
 }
 
-.oficina-label, .transparencia-label {
+.oficina-label {
+    font-weight: 600;
+    color: white;
+    font-size: 1.1rem;
+}
+
+.transparencia-label {
     font-weight: 600;
     color: white;
     font-size: 1.1rem;

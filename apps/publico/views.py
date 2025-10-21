@@ -8,22 +8,12 @@ from datetime import datetime
 import os
 
 
-class HomeView(TemplateView):
-    """Vista principal que muestra todas las leyes disponibles"""
-    template_name = 'publico/home.html'
+class HomeView(View):
+    """Vista principal que redirige a subarticulo/1/ con el año actual"""
     
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        # Cargar leyes con sus sub-artículos
-        context['leyes'] = Ley.objects.filter(activa=True).prefetch_related(
-            'subarticulos'
-        ).order_by('orden')
-        
-        # Estadísticas generales
-        context['total_documentos'] = Documento.objects.filter(activo=True).count()
-        context['total_descargas'] = LogAcceso.objects.filter(tipo_acceso='DESCARGA').count()
-        
-        return context
+    def get(self, request):
+        año_actual = datetime.now().year
+        return redirect(f'/subarticulo/1/?año={año_actual}')
 
 
 class LeyDetailView(DetailView):
@@ -70,7 +60,7 @@ class SubArticuloDetailView(DetailView):
         años_disponibles = Documento.objects.filter(
             tipo_documento__subarticulo=self.object,
             activo=True
-        ).values_list('año', flat=True).distinct().order_by('-año')
+        ).values_list('año', flat=True).distinct().order_by('año')
         
         # Agrupar documentos por año y tipo
         documentos_agrupados = {}
@@ -302,7 +292,7 @@ class SubArticuloContentAPIView(View):
             años_disponibles = Documento.objects.filter(
                 tipo_documento__subarticulo=subarticulo,
                 activo=True
-            ).values_list('año', flat=True).distinct().order_by('-año')
+            ).values_list('año', flat=True).distinct().order_by('año')
             
             # Filtro por año si se especifica
             año_filtro = request.GET.get('año')
