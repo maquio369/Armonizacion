@@ -9,11 +9,26 @@ import os
 
 
 class HomeView(View):
-    """Vista principal que redirige a subarticulo/1/ con el año actual"""
+    """Vista principal que redirige a subarticulo/1/ con el año más reciente con documentos"""
     
     def get(self, request):
         año_actual = datetime.now().year
-        return redirect(f'/subarticulo/1/?año={año_actual}')
+        
+        # Buscar el año más reciente con documentos disponibles
+        años_con_documentos = Documento.objects.filter(
+            activo=True
+        ).values_list('año', flat=True).distinct().order_by('-año')
+        
+        # Si hay documentos para el año actual, usarlo; si no, usar el más reciente
+        if año_actual in años_con_documentos:
+            año_seleccionado = año_actual
+        elif años_con_documentos.exists():
+            año_seleccionado = años_con_documentos.first()
+        else:
+            # Si no hay documentos, usar el año actual por defecto
+            año_seleccionado = año_actual
+        
+        return redirect(f'/subarticulo/1/?año={año_seleccionado}')
 
 
 class LeyDetailView(DetailView):
@@ -43,10 +58,29 @@ class SubArticuloDetailView(DetailView):
         return SubArticulo.objects.filter(activo=True)
     
     def get(self, request, *args, **kwargs):
-        # Si no hay parámetro de año, redirigir al año actual
+        # Si no hay parámetro de año, redirigir al año más reciente con documentos
         if 'año' not in request.GET:
             año_actual = datetime.now().year
-            return redirect(f'{request.path}?año={año_actual}')
+            
+            # Obtener el subarticulo para filtrar documentos específicos
+            subarticulo_id = kwargs.get('subarticulo_id')
+            
+            # Buscar años con documentos para este subarticulo
+            años_con_documentos = Documento.objects.filter(
+                tipo_documento__subarticulo_id=subarticulo_id,
+                activo=True
+            ).values_list('año', flat=True).distinct().order_by('-año')
+            
+            # Si hay documentos para el año actual, usarlo; si no, usar el más reciente
+            if año_actual in años_con_documentos:
+                año_seleccionado = año_actual
+            elif años_con_documentos.exists():
+                año_seleccionado = años_con_documentos.first()
+            else:
+                # Si no hay documentos, usar el año actual por defecto
+                año_seleccionado = año_actual
+            
+            return redirect(f'{request.path}?año={año_seleccionado}')
         return super().get(request, *args, **kwargs)
     
     def get_context_data(self, **kwargs):
@@ -56,10 +90,15 @@ class SubArticuloDetailView(DetailView):
         # Obtener tipos de documento del sub-artículo
         tipos_documento = self.object.tipos_documento.filter(activo=True).order_by('orden')
         
-        # Obtener años disponibles
+        # Obtener años disponibles (solo los últimos 6 años desde el año actual)
+        año_actual = datetime.now().year
+        año_minimo = año_actual - 6  # 6 años atrás desde el año actual
+        
         años_disponibles = Documento.objects.filter(
             tipo_documento__subarticulo=self.object,
-            activo=True
+            activo=True,
+            año__gte=año_minimo,  # Mayor o igual al año mínimo
+            año__lte=año_actual   # Menor o igual al año actual
         ).values_list('año', flat=True).distinct().order_by('año')
         
         # Agrupar documentos por año y tipo
@@ -288,10 +327,15 @@ class SubArticuloContentAPIView(View):
             # Obtener tipos de documento del sub-artículo
             tipos_documento = subarticulo.tipos_documento.filter(activo=True).order_by('orden')
             
-            # Obtener años disponibles
+            # Obtener años disponibles (solo los últimos 6 años desde el año actual)
+            año_actual = datetime.now().year
+            año_minimo = año_actual - 6  # 6 años atrás desde el año actual
+            
             años_disponibles = Documento.objects.filter(
                 tipo_documento__subarticulo=subarticulo,
-                activo=True
+                activo=True,
+                año__gte=año_minimo,  # Mayor o igual al año mínimo
+                año__lte=año_actual   # Menor o igual al año actual
             ).values_list('año', flat=True).distinct().order_by('año')
             
             # Filtro por año si se especifica
