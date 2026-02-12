@@ -137,10 +137,8 @@
                             {{ documentos_tipo.ANUAL.titulo_personalizado|default:tipo_documento.nombre }}
                         </div>
                         <div class="documento-meta">
-                            <i class="fas fa-calendar me-1"></i>{{
-                            documentos_tipo.ANUAL.get_fecha_mas_reciente|date:"d/m/Y" }}
-                            <i class="fas fa-weight-hanging ms-3 me-1"></i>{{ documentos_tipo.ANUAL.get_tamaño_legible
-                            }}
+                            <i class="fas fa-calendar me-1"></i>{{ documentos_tipo.ANUAL.fecha_modificacion|date:"d/m/Y" }}
+                            <i class="fas fa-weight-hanging ms-3 me-1"></i>{% if documentos_tipo.ANUAL.tamaño_archivo %}{{ documentos_tipo.ANUAL.tamaño_archivo|filesizeformat }}{% else %}Desconocido{% endif %}
                         </div>
 
                     </div>
@@ -171,7 +169,7 @@
                                 {% if documento %}
                                 <div class="mt-auto">
                                     <p class="card-text small text-muted mb-2">
-                                        {{ documento.get_tamaño_legible }}
+                                        {% if documento.tamaño_archivo %}{{ documento.tamaño_archivo|filesizeformat }}{% else %}Desconocido{% endif %}
                                     </p>
                                     <div class="d-flex flex-column gap-1">
                                         <a href="{% url 'publico:visualizar_documento' documento.id %}"
@@ -203,8 +201,7 @@
         <!-- Leyenda al final de cada año -->
         <div class="documento-footer mt-3 text-center">
             <small class="text-muted">
-                Actualizado al: {% if ultima_actualizacion %}{{ ultima_actualizacion|date:"d \d\e F \d\e Y" }}{% else
-                %}{% now "d \d\e F \d\e Y" %}{% endif %}.
+                Actualizado al: {% if ultima_actualizacion %}{{ ultima_actualizacion|date:"d \d\e F \d\e Y" }}{%else%}{% now "d \d\e F \d\e Y" %}{% endif %}.
                 {% if 'Inventario' in subarticulo.nombre or 'Bienes' in subarticulo.nombre %}
                 Fuente: Coordinación Administrativa (Área de Recursos Materiales y Servicios Generales) | Conmutador:
                 (961) 61 880 50 | Ext:21200
