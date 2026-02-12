@@ -6,10 +6,9 @@
 <!-- Navegación de Leyes con estado activo -->
 {% for ley_item in leyes %}
 <div class="ley-item">
-    <button class="ley-link {% if ley_item.id == ley.id %}active{% endif %}" 
-            type="button" data-bs-toggle="collapse" 
-            data-bs-target="#ley{{ ley_item.id }}" 
-            aria-expanded="{% if ley_item.id == ley.id %}true{% else %}false{% endif %}">
+    <button class="ley-link {% if ley_item.id == ley.id %}active{% endif %}" type="button" data-bs-toggle="collapse"
+        data-bs-target="#ley{{ ley_item.id }}"
+        aria-expanded="{% if ley_item.id == ley.id %}true{% else %}false{% endif %}">
         <div class="ley-icon">
             <i class="{% if ley_item.orden == 1 %}fas fa-balance-scale{% else %}fas fa-chart-line{% endif %}"></i>
         </div>
@@ -18,7 +17,7 @@
             <i class="fas fa-chevron-right"></i>
         </div>
     </button>
-    
+
     <div class="collapse subnav {% if ley_item.id == ley.id %}show{% endif %}" id="ley{{ ley_item.id }}">
         {% for subarticulo in ley_item.subarticulos.all %}
         <a href="{% url 'publico:subarticulo_detail' subarticulo.id %}" class="subnav-item">
@@ -53,7 +52,8 @@
                 <div class="card-body">
                     <div class="d-flex align-items-start mb-3">
                         <div class="subarticulo-icon me-3">
-                            <i class="fas fa-{% cycle 'file-invoice-dollar' 'chart-bar' 'file-alt' 'project-diagram' 'hand-holding-usd' 'file-contract' 'clipboard-check' 'boxes' %}"></i>
+                            <i
+                                class="fas fa-{% cycle 'file-invoice-dollar' 'chart-bar' 'file-alt' 'project-diagram' 'hand-holding-usd' 'file-contract' 'clipboard-check' 'boxes' %}"></i>
                         </div>
                         <div class="flex-grow-1">
                             <h5 class="card-title text-primary">{{ subarticulo.nombre }}</h5>
@@ -62,19 +62,20 @@
                             {% endif %}
                         </div>
                     </div>
-                    
+
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <span class="badge bg-{% if subarticulo.periodicidad == 'ANUAL' %}warning{% else %}info{% endif %} me-2">
-                                <i class="fas fa-{% if subarticulo.periodicidad == 'ANUAL' %}calendar-alt{% else %}calendar-check{% endif %} me-1"></i>
+                            <span
+                                class="badge bg-{% if subarticulo.periodicidad == 'ANUAL' %}warning{% else %}info{% endif %} me-2">
+                                <i
+                                    class="fas fa-{% if subarticulo.periodicidad == 'ANUAL' %}calendar-alt{% else %}calendar-check{% endif %} me-1"></i>
                                 {{ subarticulo.get_periodicidad_display }}
                             </span>
                             <span class="badge bg-light text-dark">
                                 {{ subarticulo.tipos_documento.count }} documentos
                             </span>
                         </div>
-                        <a href="{% url 'publico:subarticulo_detail' subarticulo.id %}" 
-                           class="btn btn-primary btn-sm">
+                        <a href="{% url 'publico:subarticulo_detail' subarticulo.id %}" class="btn btn-primary btn-sm">
                             <i class="fas fa-folder-open me-1"></i>Ver Documentos
                         </a>
                     </div>
@@ -94,7 +95,7 @@
 
 <!-- Información Footer -->
 <div class="info-footer">
-    Actualizado al: {% now "d \d\e F \d\e Y" %}. Fuente: Coordinación Administrativa (Área de Planeación) | 
-    Conmutador: (961) 61 880 50 | Ext:21150
+    Actualizado al: {% now "d \d\e F \d\e Y" %}. Fuente: Coordinación Administrativa (Área de Planeación) |
+    Conmutador: (961) 61 880 50 | Ext:21170
 </div>
 {% endblock %}

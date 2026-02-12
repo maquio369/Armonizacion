@@ -18,12 +18,13 @@
     <div class="row">
         {% for subarticulo in subarticulos %}
         <div class="col-lg-6 col-md-12 mb-4">
-            <div class="card border-0 shadow-sm h-100 card-hover subarticulo-card" 
-                 data-subarticulo-id="{{ subarticulo.id }}">
+            <div class="card border-0 shadow-sm h-100 card-hover subarticulo-card"
+                data-subarticulo-id="{{ subarticulo.id }}">
                 <div class="card-body">
                     <div class="d-flex align-items-start mb-3">
                         <div class="subarticulo-icon me-3">
-                            <i class="fas fa-{% cycle 'file-invoice-dollar' 'chart-bar' 'file-alt' 'project-diagram' 'hand-holding-usd' 'file-contract' 'clipboard-check' 'boxes' %}"></i>
+                            <i
+                                class="fas fa-{% cycle 'file-invoice-dollar' 'chart-bar' 'file-alt' 'project-diagram' 'hand-holding-usd' 'file-contract' 'clipboard-check' 'boxes' %}"></i>
                         </div>
                         <div class="flex-grow-1">
                             <h5 class="card-title text-primary">{{ subarticulo.nombre }}</h5>
@@ -32,19 +33,21 @@
                             {% endif %}
                         </div>
                     </div>
-                    
+
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <span class="badge bg-{% if subarticulo.periodicidad == 'ANUAL' %}warning{% else %}info{% endif %} me-2">
-                                <i class="fas fa-{% if subarticulo.periodicidad == 'ANUAL' %}calendar-alt{% else %}calendar-check{% endif %} me-1"></i>
+                            <span
+                                class="badge bg-{% if subarticulo.periodicidad == 'ANUAL' %}warning{% else %}info{% endif %} me-2">
+                                <i
+                                    class="fas fa-{% if subarticulo.periodicidad == 'ANUAL' %}calendar-alt{% else %}calendar-check{% endif %} me-1"></i>
                                 {{ subarticulo.get_periodicidad_display }}
                             </span>
                             <span class="badge bg-light text-dark">
                                 {{ subarticulo.tipos_documento.count }} documentos
                             </span>
                         </div>
-                        <button class="btn btn-primary btn-sm load-subarticulo" 
-                                data-subarticulo-id="{{ subarticulo.id }}">
+                        <button class="btn btn-primary btn-sm load-subarticulo"
+                            data-subarticulo-id="{{ subarticulo.id }}">
                             <i class="fas fa-folder-open me-1"></i>Ver Documentos
                         </button>
                     </div>
@@ -64,6 +67,6 @@
 
 <!-- Información Footer -->
 <div class="info-footer">
-    Actualizado al: {% now "d \d\e F \d\e Y" %}. Fuente: Coordinación Administrativa (Área de Planeación) | 
-    Conmutador: (961) 61 880 50 | Ext:21150
+    Actualizado al: {% now "d \d\e F \d\e Y" %}. Fuente: Coordinación Administrativa (Área de Planeación) |
+    Conmutador: (961) 61 880 50 | Ext:21170
 </div>
